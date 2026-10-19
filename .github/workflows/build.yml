@@ -20,11 +20,11 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate full project from scratch
+      - name: Generate Yandex-style Spaces Player
         run: |
-          # Создаем всю структуру папок с нуля
           mkdir -p app/src/main/java/com/example/spacesplayer
           mkdir -p app/src/main/res/layout
+          mkdir -p app/src/main/res/drawable
 
           # 1. settings.gradle.kts
           cat << 'EOF' > settings.gradle.kts
@@ -46,7 +46,7 @@ jobs:
           include(":app")
           EOF
 
-          # 2. Корневой build.gradle.kts
+          # 2. build.gradle.kts
           cat << 'EOF' > build.gradle.kts
           plugins {
               id("com.android.application") version "8.2.2" apply false
@@ -73,8 +73,8 @@ jobs:
                   applicationId = "com.example.spacesplayer"
                   minSdk = 24
                   targetSdk = 34
-                  versionCode = 1
-                  versionName = "1.0"
+                  versionCode = 2
+                  versionName = "2.0"
               }
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
@@ -88,15 +88,350 @@ jobs:
               implementation("androidx.core:core-ktx:1.12.0")
               implementation("androidx.appcompat:appcompat:1.6.1")
               implementation("com.google.android.material:material:1.11.0")
+              implementation("androidx.recyclerview:recyclerview:1.3.2")
               implementation("androidx.media3:media3-exoplayer:1.2.1")
-              implementation("androidx.media3:media3-ui:1.2.1")
               implementation("org.jsoup:jsoup:1.17.2")
               implementation("com.squareup.okhttp3:okhttp:4.12.0")
               implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
           }
           EOF
 
-          # 5. AndroidManifest.xml
+          # 5. Фоновые шейпы для Яндекс-стиля
+          cat << 'EOF' > app/src/main/res/drawable/bg_search.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="#1C1C1E"/>
+              <corners android:radius="14dp"/>
+          </shape>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/bg_chip.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="#242426"/>
+              <corners android:radius="20dp"/>
+          </shape>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/bg_yellow_btn.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="#FFCC00"/>
+              <corners android:radius="24dp"/>
+          </shape>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/drawable/bg_cover.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="#2A2A2D"/>
+              <corners android:radius="10dp"/>
+          </shape>
+          EOF
+
+          # 6. Карточка одного трека (item_track.xml)
+          cat << 'EOF' > app/src/main/res/layout/item_track.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal"
+              android:gravity="center_vertical"
+              android:paddingVertical="10dp"
+              android:paddingHorizontal="16dp"
+              android:background="?attr/selectableItemBackground">
+
+              <TextView
+                  android:id="@+id/tvCover"
+                  android:layout_width="48dp"
+                  android:layout_height="48dp"
+                  android:background="@drawable/bg_cover"
+                  android:gravity="center"
+                  android:text="♫"
+                  android:textColor="#FFCC00"
+                  android:textSize="20sp"
+                  android:textStyle="bold" />
+
+              <LinearLayout
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:orientation="vertical"
+                  android:layout_marginStart="14dp"
+                  android:layout_marginEnd="8dp">
+
+                  <TextView
+                      android:id="@+id/tvTitle"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="Название трека"
+                      android:textColor="#FFFFFF"
+                      android:textSize="15sp"
+                      android:textStyle="bold"
+                      android:singleLine="true"
+                      android:ellipsize="end" />
+
+                  <TextView
+                      android:id="@+id/tvSubtitle"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="Spaces Music"
+                      android:textColor="#8E8E93"
+                      android:textSize="13sp"
+                      android:singleLine="true"
+                      android:ellipsize="end"
+                      android:layout_marginTop="2dp" />
+              </LinearLayout>
+
+              <TextView
+                  android:id="@+id/tvPlayIcon"
+                  android:layout_width="32dp"
+                  android:layout_height="32dp"
+                  android:gravity="center"
+                  android:text="▶"
+                  android:textColor="#FFCC00"
+                  android:textSize="16sp" />
+          </LinearLayout>
+          EOF
+
+          # 7. Главный экран в стиле Яндекс Музыки (activity_main.xml)
+          cat << 'EOF' > app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:background="#0A0A0A">
+
+              <!-- Шапка -->
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:gravity="center_vertical"
+                  android:paddingHorizontal="16dp"
+                  android:paddingTop="16dp"
+                  android:paddingBottom="8dp">
+
+                  <TextView
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:text="Моя волна • Spaces"
+                      android:textColor="#FFFFFF"
+                      android:textSize="22sp"
+                      android:textStyle="bold" />
+
+                  <TextView
+                      android:id="@+id/tvMirror"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:background="@drawable/bg_chip"
+                      android:paddingHorizontal="10dp"
+                      android:paddingVertical="4dp"
+                      android:text="spcs.me"
+                      android:textColor="#FFCC00"
+                      android:textSize="11sp" />
+              </LinearLayout>
+
+              <!-- Строка поиска -->
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:paddingHorizontal="16dp"
+                  android:paddingVertical="6dp">
+
+                  <EditText
+                      android:id="@+id/etSearch"
+                      android:layout_width="0dp"
+                      android:layout_height="46dp"
+                      android:layout_weight="1"
+                      android:background="@drawable/bg_search"
+                      android:hint="Трек, исполнитель, ремикс..."
+                      android:textColor="#FFFFFF"
+                      android:textColorHint="#787880"
+                      android:paddingHorizontal="16dp"
+                      android:singleLine="true"
+                      android:imeOptions="actionSearch"
+                      android:inputType="text" />
+
+                  <Button
+                      android:id="@+id/btnSearch"
+                      android:layout_width="wrap_content"
+                      android:layout_height="46dp"
+                      android:layout_marginStart="8dp"
+                      android:backgroundTint="#FFCC00"
+                      android:text="Найти"
+                      android:textColor="#000000"
+                      android:textStyle="bold" />
+              </LinearLayout>
+
+              <!-- Быстрые жанры (Чипсы) -->
+              <HorizontalScrollView
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:scrollbars="none"
+                  android:paddingHorizontal="12dp"
+                  android:paddingVertical="8dp">
+
+                  <LinearLayout
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal">
+
+                      <TextView android:id="@+id/chipHits" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🔥 Новинки" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
+                      <TextView android:id="@+id/chipPhonk" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="⚡ Фонк" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
+                      <TextView android:id="@+id/chipBass" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🔊 Басы в тачку" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
+                      <TextView android:id="@+id/chipRap" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🎤 Русский рэп" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
+                      <TextView android:id="@+id/chipClub" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="💿 Клубняк 2000-х" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
+                      <TextView android:id="@+id/chipRock" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🎸 Рок" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
+                  </LinearLayout>
+              </HorizontalScrollView>
+
+              <!-- Статус-строка -->
+              <TextView
+                  android:id="@+id/tvStatus"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:paddingHorizontal="16dp"
+                  android:paddingBottom="6dp"
+                  android:text="Загрузка популярных треков..."
+                  android:textColor="#8E8E93"
+                  android:textSize="12sp" />
+
+              <!-- Список треков -->
+              <androidx.recyclerview.widget.RecyclerView
+                  android:id="@+id/rvTracks"
+                  android:layout_width="match_parent"
+                  android:layout_height="0dp"
+                  android:layout_weight="1" />
+
+              <!-- Нижний док-плеер в стиле Яндекс Музыки -->
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical"
+                  android:background="#18181A"
+                  android:paddingHorizontal="16dp"
+                  android:paddingTop="10dp"
+                  android:paddingBottom="14dp">
+
+                  <!-- Ползунок прогресса + время -->
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal"
+                      android:gravity="center_vertical">
+
+                      <TextView
+                          android:id="@+id/tvCurrentTime"
+                          android:layout_width="38dp"
+                          android:layout_height="wrap_content"
+                          android:text="0:00"
+                          android:textColor="#8E8E93"
+                          android:textSize="11sp" />
+
+                      <SeekBar
+                          android:id="@+id/seekBar"
+                          android:layout_width="0dp"
+                          android:layout_height="wrap_content"
+                          android:layout_weight="1"
+                          android:progressTint="#FFCC00"
+                          android:thumbTint="#FFCC00" />
+
+                      <TextView
+                          android:id="@+id/tvTotalTime"
+                          android:layout_width="38dp"
+                          android:layout_height="wrap_content"
+                          android:gravity="end"
+                          android:text="0:00"
+                          android:textColor="#8E8E93"
+                          android:textSize="11sp" />
+                  </LinearLayout>
+
+                  <!-- Инфо о текущем треке и кнопки управления -->
+                  <LinearLayout
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal"
+                      android:gravity="center_vertical"
+                      android:layout_marginTop="4dp">
+
+                      <TextView
+                          android:layout_width="44dp"
+                          android:layout_height="44dp"
+                          android:background="@drawable/bg_cover"
+                          android:gravity="center"
+                          android:text="♫"
+                          android:textColor="#FFCC00"
+                          android:textSize="18sp" />
+
+                      <LinearLayout
+                          android:layout_width="0dp"
+                          android:layout_height="wrap_content"
+                          android:layout_weight="1"
+                          android:orientation="vertical"
+                          android:layout_marginHorizontal="12dp">
+
+                          <TextView
+                              android:id="@+id/tvNowPlayingTitle"
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:text="Ничего не играет"
+                              android:textColor="#FFFFFF"
+                              android:textSize="15sp"
+                              android:textStyle="bold"
+                              android:singleLine="true"
+                              android:ellipsize="marquee" />
+
+                          <TextView
+                              android:id="@+id/tvNowPlayingSub"
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:text="Выберите трек из списка"
+                              android:textColor="#8E8E93"
+                              android:textSize="12sp"
+                              android:singleLine="true" />
+                      </LinearLayout>
+
+                      <Button
+                          android:id="@+id/btnPrev"
+                          android:layout_width="42dp"
+                          android:layout_height="42dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:text="⏮"
+                          android:textColor="#FFFFFF"
+                          android:textSize="16sp"
+                          android:padding="0dp" />
+
+                      <Button
+                          android:id="@+id/btnPlayPause"
+                          android:layout_width="48dp"
+                          android:layout_height="48dp"
+                          android:layout_marginHorizontal="4dp"
+                          android:backgroundTint="#FFCC00"
+                          android:text="▶"
+                          android:textColor="#000000"
+                          android:textSize="18sp"
+                          android:textStyle="bold"
+                          android:padding="0dp" />
+
+                      <Button
+                          android:id="@+id/btnNext"
+                          android:layout_width="42dp"
+                          android:layout_height="42dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:text="⏭"
+                          android:textColor="#FFFFFF"
+                          android:textSize="16sp"
+                          android:padding="0dp" />
+                  </LinearLayout>
+              </LinearLayout>
+          </LinearLayout>
+          EOF
+
+          # 8. AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -104,13 +439,14 @@ jobs:
               <application
                   android:allowBackup="true"
                   android:icon="@android:drawable/ic_media_play"
-                  android:label="Spaces Player"
+                  android:label="Spaces Музыка"
                   android:supportsRtl="true"
                   android:theme="@style/Theme.Material3.Dark.NoActionBar"
                   android:usesCleartextTraffic="true">
                   <activity
                       android:name=".MainActivity"
-                      android:exported="true">
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
                           <category android:name="android.intent.category.LAUNCHER" />
@@ -120,275 +456,387 @@ jobs:
           </manifest>
           EOF
 
-          # 6. Разметка экрана activity_main.xml
-          cat << 'EOF' > app/src/main/res/layout/activity_main.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              android:background="#0F1117"
-              android:padding="16dp">
-
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="SPACES MUSIC"
-                  android:textColor="#60A5FA"
-                  android:textSize="20sp"
-                  android:textStyle="bold"
-                  android:layout_gravity="center_horizontal"
-                  android:layout_marginBottom="12dp" />
-
-              <HorizontalScrollView
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:scrollbars="none"
-                  android:layout_marginBottom="12dp">
-                  <LinearLayout
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:orientation="horizontal">
-                      <Button android:id="@+id/btnClub" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Клубняк" android:layout_marginEnd="6dp" />
-                      <Button android:id="@+id/btnBass" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Басы" android:layout_marginEnd="6dp" />
-                      <Button android:id="@+id/btnRap" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Рэп" android:layout_marginEnd="6dp" />
-                      <Button android:id="@+id/btnRock" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Рок" />
-                  </LinearLayout>
-              </HorizontalScrollView>
-
-              <LinearLayout
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:orientation="horizontal"
-                  android:layout_marginBottom="10dp">
-                  <EditText
-                      android:id="@+id/etSearch"
-                      android:layout_width="0dp"
-                      android:layout_height="46dp"
-                      android:layout_weight="1"
-                      android:background="#1E232E"
-                      android:hint="Поиск трека..."
-                      android:textColor="#FFFFFF"
-                      android:textColorHint="#9CA3AF"
-                      android:paddingStart="12dp"
-                      android:paddingEnd="12dp" />
-                  <Button
-                      android:id="@+id/btnSearch"
-                      android:layout_width="wrap_content"
-                      android:layout_height="46dp"
-                      android:text="Найти"
-                      android:layout_marginStart="8dp" />
-              </LinearLayout>
-
-              <LinearLayout
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:background="#181B24"
-                  android:orientation="vertical"
-                  android:padding="12dp"
-                  android:layout_marginBottom="10dp">
-
-                  <TextView
-                      android:id="@+id/tvCurrentTrack"
-                      android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:text="Ничего не выбрано"
-                      android:textColor="#60A5FA"
-                      android:textStyle="bold"
-                      android:singleLine="true"
-                      android:ellipsize="marquee"
-                      android:layout_marginBottom="8dp" />
-
-                  <Button
-                      android:id="@+id/btnPlayPause"
-                      android:layout_width="match_parent"
-                      android:layout_height="40dp"
-                      android:text="Воспроизведение" />
-              </LinearLayout>
-
-              <TextView
-                  android:id="@+id/tvStatus"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:text="Готов к поиску"
-                  android:textColor="#9CA3AF"
-                  android:textSize="12sp"
-                  android:layout_marginBottom="6dp" />
-
-              <ListView
-                  android:id="@+id/lvTracks"
-                  android:layout_width="match_parent"
-                  android:layout_height="0dp"
-                  android:layout_weight="1"
-                  android:divider="#262B3A"
-                  android:dividerHeight="1dp" />
-
-          </LinearLayout>
-          EOF
-
-          # 7. Код плеера MainActivity.kt
+          # 9. Код приложения (MainActivity.kt) с обходом блокировок и двухэтапным парсером Spaces
           cat << 'EOF' > app/src/main/java/com/example/spacesplayer/MainActivity.kt
           package com.example.spacesplayer
 
           import android.os.Bundle
+          import android.os.Handler
+          import android.os.Looper
+          import android.view.LayoutInflater
+          import android.view.View
+          import android.view.ViewGroup
+          import android.view.inputmethod.EditorInfo
           import android.widget.*
           import androidx.appcompat.app.AppCompatActivity
           import androidx.media3.common.MediaItem
           import androidx.media3.common.Player
+          import androidx.media3.datasource.DefaultHttpDataSource
           import androidx.media3.exoplayer.ExoPlayer
-          import kotlinx.coroutines.CoroutineScope
-          import kotlinx.coroutines.Dispatchers
-          import kotlinx.coroutines.launch
-          import kotlinx.coroutines.withContext
+          import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+          import androidx.recyclerview.widget.LinearLayoutManager
+          import androidx.recyclerview.widget.RecyclerView
+          import kotlinx.coroutines.*
+          import okhttp3.Cookie
+          import okhttp3.CookieJar
+          import okhttp3.HttpUrl
           import okhttp3.OkHttpClient
           import okhttp3.Request
           import org.jsoup.Jsoup
           import java.net.URLEncoder
+          import java.util.concurrent.TimeUnit
 
-          data class AudioTrack(val title: String, val url: String)
+          data class SpaceTrack(
+              val title: String,
+              val artist: String,
+              val pageOrDirectUrl: String,
+              var resolvedMp3Url: String = ""
+          )
 
           class MainActivity : AppCompatActivity() {
 
               private lateinit var player: ExoPlayer
-              private val httpClient = OkHttpClient.Builder().followRedirects(true).build()
-              private val trackList = ArrayList<AudioTrack>()
-              private lateinit var adapter: ArrayAdapter<String>
-              private var currentIndex = -1
+              private lateinit var rvTracks: RecyclerView
+              private lateinit var tvStatus: TextView
+              private lateinit var tvMirror: TextView
+              private lateinit var etSearch: EditText
+              private lateinit var tvNowPlayingTitle: TextView
+              private lateinit var tvNowPlayingSub: TextView
+              private lateinit var btnPlayPause: Button
+              private lateinit var seekBar: SeekBar
+              private lateinit var tvCurrentTime: TextView
+              private lateinit var tvTotalTime: TextView
 
-              private val SPACES_BASE = "https://spaces.im"
+              private val tracks = ArrayList<SpaceTrack>()
+              private lateinit var adapter: TrackAdapter
+              private var currentIndex = -1
+              private var isUserSeeking = false
+
+              private val uiScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+              private val handler = Handler(Looper.getMainLooper())
+
+              // Список зеркал Spaces для обхода блокировок РКН/провайдеров
+              private val mirrors = listOf(
+                  "https://spcs.me",
+                  "https://spaces.im",
+                  "https://spcs.top",
+                  "https://spaces-blogs.com"
+              )
+              private var activeMirror = mirrors[0]
+
+              private val USER_AGENT = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
+
+              // Сохраняем куки между запросами, чтобы Spaces отдавал ссылки на скачивание
+              private val cookieStore = HashMap<String, List<Cookie>>()
+              private val httpClient = OkHttpClient.Builder()
+                  .connectTimeout(12, TimeUnit.SECONDS)
+                  .readTimeout(12, TimeUnit.SECONDS)
+                  .followRedirects(true)
+                  .followSslRedirects(true)
+                  .cookieJar(object : CookieJar {
+                      override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+                          cookieStore[url.host] = cookies
+                      }
+                      override fun loadForRequest(url: HttpUrl): List<Cookie> {
+                          return cookieStore[url.host] ?: emptyList()
+                      }
+                  })
+                  .build()
 
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
                   setContentView(R.layout.activity_main)
 
-                  player = ExoPlayer.Builder(this).build()
+                  rvTracks = findViewById(R.id.rvTracks)
+                  tvStatus = findViewById(R.id.tvStatus)
+                  tvMirror = findViewById(R.id.tvMirror)
+                  etSearch = findViewById(R.id.etSearch)
+                  tvNowPlayingTitle = findViewById(R.id.tvNowPlayingTitle)
+                  tvNowPlayingSub = findViewById(R.id.tvNowPlayingSub)
+                  btnPlayPause = findViewById(R.id.btnPlayPause)
+                  seekBar = findViewById(R.id.seekBar)
+                  tvCurrentTime = findViewById(R.id.tvCurrentTime)
+                  tvTotalTime = findViewById(R.id.tvTotalTime)
 
-                  val etSearch = findViewById<EditText>(R.id.etSearch)
-                  val btnSearch = findViewById<Button>(R.id.btnSearch)
-                  val tvStatus = findViewById<TextView>(R.id.tvStatus)
-                  val tvCurrentTrack = findViewById<TextView>(R.id.tvCurrentTrack)
-                  val btnPlayPause = findViewById<Button>(R.id.btnPlayPause)
-                  val lvTracks = findViewById<ListView>(R.id.lvTracks)
+                  setupExoPlayer()
+                  setupRecyclerView()
+                  setupControls()
 
-                  adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, ArrayList<String>())
-                  lvTracks.adapter = adapter
+                  // Загружаем стартовую подборку при открытии
+                  searchMusic("Новинки 2026")
+              }
 
-                  btnPlayPause.setOnClickListener {
-                      if (player.isPlaying) {
-                          player.pause()
-                          btnPlayPause.text = "Играть"
-                      } else {
-                          player.play()
-                          btnPlayPause.text = "Пауза"
-                      }
-                  }
+              private fun setupExoPlayer() {
+                  val dataSourceFactory = DefaultHttpDataSource.Factory()
+                      .setUserAgent(USER_AGENT)
+                      .setAllowCrossProtocolRedirects(true)
+
+                  player = ExoPlayer.Builder(this)
+                      .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+                      .build()
 
                   player.addListener(object : Player.Listener {
+                      override fun onIsPlayingChanged(isPlaying: Boolean) {
+                          btnPlayPause.text = if (isPlaying) "⏸" else "▶"
+                      }
+
                       override fun onPlaybackStateChanged(state: Int) {
-                          if (state == Player.STATE_ENDED) {
-                              if (currentIndex + 1 < trackList.size) {
-                                  playTrack(currentIndex + 1, tvCurrentTrack, btnPlayPause)
-                              }
+                          if (state == Player.STATE_READY) {
+                              seekBar.max = (player.duration / 1000).toInt().coerceAtLeast(1)
+                              tvTotalTime.text = formatTime(player.duration)
+                          } else if (state == Player.STATE_ENDED) {
+                              playNext()
                           }
                       }
                   })
 
-                  findViewById<Button>(R.id.btnClub).setOnClickListener { searchSpaces("Клубняк 2008", tvStatus) }
-                  findViewById<Button>(R.id.btnBass).setOnClickListener { searchSpaces("Басы в тачку", tvStatus) }
-                  findViewById<Button>(R.id.btnRap).setOnClickListener { searchSpaces("Русский рэп", tvStatus) }
-                  findViewById<Button>(R.id.btnRock).setOnClickListener { searchSpaces("Русский рок", tvStatus) }
-
-                  btnSearch.setOnClickListener {
-                      val q = etSearch.text.toString().trim()
-                      if (q.isNotEmpty()) searchSpaces(q, tvStatus)
-                  }
-
-                  lvTracks.setOnItemClickListener { _, _, position, _ ->
-                      playTrack(position, tvCurrentTrack, btnPlayPause)
-                  }
+                  // Обновление ползунка каждую секунду
+                  handler.post(object : Runnable {
+                      override fun run() {
+                          if (player.isPlaying && !isUserSeeking) {
+                              val pos = player.currentPosition
+                              seekBar.progress = (pos / 1000).toInt()
+                              tvCurrentTime.text = formatTime(pos)
+                          }
+                          handler.postDelayed(this, 1000)
+                      }
+                  })
               }
 
-              private fun searchSpaces(query: String, tvStatus: TextView) {
-                  tvStatus.text = "Ищем '$query' на Spaces..."
+              private fun setupRecyclerView() {
+                  adapter = TrackAdapter(tracks) { pos ->
+                      playTrackAt(pos)
+                  }
+                  rvTracks.layoutManager = LinearLayoutManager(this)
+                  rvTracks.adapter = adapter
+              }
 
-                  CoroutineScope(Dispatchers.IO).launch {
-                      val foundTracks = ArrayList<AudioTrack>()
+              private fun setupControls() {
+                  findViewById<Button>(R.id.btnSearch).setOnClickListener {
+                      val q = etSearch.text.toString().trim()
+                      if (q.isNotEmpty()) searchMusic(q)
+                  }
+
+                  etSearch.setOnEditorActionListener { _, actionId, _ ->
+                      if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                          val q = etSearch.text.toString().trim()
+                          if (q.isNotEmpty()) searchMusic(q)
+                          true
+                      } else false
+                  }
+
+                  findViewById<TextView>(R.id.chipHits).setOnClickListener { searchMusic("Хит 2026") }
+                  findViewById<TextView>(R.id.chipPhonk).setOnClickListener { searchMusic("Phonk") }
+                  findViewById<TextView>(R.id.chipBass).setOnClickListener { searchMusic("Басы в машину") }
+                  findViewById<TextView>(R.id.chipRap).setOnClickListener { searchMusic("Русский рэп") }
+                  findViewById<TextView>(R.id.chipClub).setOnClickListener { searchMusic("Клубняк") }
+                  findViewById<TextView>(R.id.chipRock).setOnClickListener { searchMusic("Рок хиты") }
+
+                  btnPlayPause.setOnClickListener {
+                      if (player.isPlaying) player.pause() else player.play()
+                  }
+
+                  findViewById<Button>(R.id.btnNext).setOnClickListener { playNext() }
+                  findViewById<Button>(R.id.btnPrev).setOnClickListener { playPrev() }
+
+                  seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                      override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                          if (fromUser) tvCurrentTime.text = formatTime(progress * 1000L)
+                      }
+                      override fun onStartTrackingTouch(sb: SeekBar?) { isUserSeeking = true }
+                      override fun onStopTrackingTouch(sb: SeekBar?) {
+                          isUserSeeking = false
+                          player.seekTo((sb?.progress ?: 0) * 1000L)
+                      }
+                  })
+              }
+
+              // Запрос страницы с автоматическим перебором зеркал при ошибке сети
+              private fun fetchHtmlWithMirrorFallback(relativePath: String): String? {
+                  val orderedMirrors = listOf(activeMirror) + mirrors.filter { it != activeMirror }
+                  for (base in orderedMirrors) {
                       try {
-                          val encoded = URLEncoder.encode(query, "UTF-8")
-                          val searchUrl = "$SPACES_BASE/mysite/find/?search=$encoded&type=music"
-
+                          val fullUrl = if (relativePath.startsWith("http")) relativePath else base + relativePath
                           val req = Request.Builder()
-                              .url(searchUrl)
-                              .header("User-Agent", "Mozilla/5.0 (Linux; Android 10) Chrome/120.0.0.0 Mobile")
+                              .url(fullUrl)
+                              .header("User-Agent", USER_AGENT)
+                              .header("Accept-Language", "ru-RU,ru;q=0.9")
                               .build()
 
-                          val html = httpClient.newCall(req).execute().body?.string() ?: ""
-                          val doc = Jsoup.parse(html)
-
-                          val items = doc.select(".main_item, .f-item, li, tr, div")
-
-                          for (item in items) {
-                              var streamUrl = ""
-                              val audioTag = item.selectFirst("audio, audio source")
-                              if (audioTag != null) {
-                                  streamUrl = audioTag.attr("src").ifEmpty { audioTag.attr("data-src") }
-                              } else {
-                                  val dl = item.selectFirst("a[href*=.mp3], a[href*=download]")
-                                  if (dl != null) streamUrl = dl.attr("href")
+                          val resp = httpClient.newCall(req).execute()
+                          if (resp.isSuccessful) {
+                              val body = resp.body?.string()
+                              if (!body.isNullOrEmpty()) {
+                                  activeMirror = base
+                                  return body
                               }
+                          }
+                      } catch (_: Exception) {
+                          // Пробуем следующее зеркало
+                      }
+                  }
+                  return null
+              }
 
-                              if (streamUrl.isNotEmpty()) {
-                                  if (streamUrl.startsWith("//")) streamUrl = "https:$streamUrl"
-                                  else if (streamUrl.startsWith("/")) streamUrl = SPACES_BASE + streamUrl
+              private fun searchMusic(query: String) {
+                  tvStatus.text = "Поиск «$query»..."
+                  uiScope.launch {
+                      val resultList = withContext(Dispatchers.IO) {
+                          val parsed = ArrayList<SpaceTrack>()
+                          val encoded = URLEncoder.encode(query, "UTF-8")
 
-                                  val titleTag = item.selectFirst("a, span")
-                                  var title = titleTag?.text()?.trim() ?: "Аудиозапись"
-                                  title = title.replace(Regex("\\.mp3$", RegexOption.IGNORE_CASE), "")
+                          // Пробуем оба варианта поисковых URL Spaces
+                          val paths = listOf(
+                              "/music/search/?q=$encoded",
+                              "/mysite/find/?search=$encoded&type=26"
+                          )
 
-                                  if (foundTracks.none { it.url == streamUrl }) {
-                                      foundTracks.add(AudioTrack(title, streamUrl))
+                          for (path in paths) {
+                              val html = fetchHtmlWithMirrorFallback(path) ?: continue
+                              val doc = Jsoup.parse(html, activeMirror)
+
+                              // 1. Ищем прямые плееры или ссылки на файлы/страницы треков
+                              val links = doc.select("a[href*=/music/view/], a[href*=/files/view/], a[href*=.mp3], a[href*=download]")
+                              for (a in links) {
+                                  val href = a.absUrl("href").ifEmpty { activeMirror + a.attr("href") }
+                                  val rawText = a.text().trim().ifEmpty { a.parent()?.text()?.trim() ?: "" }
+                                  if (rawText.length < 3 || rawText.lowercase() in listOf("скачать", "слушать", "музыка", "назад")) continue
+
+                                  val clean = rawText.replace(Regex("\\.mp3$", RegexOption.IGNORE_CASE), "").trim()
+                                  val parts = clean.split(" - ", " – ", limit = 2)
+                                  val artist = if (parts.size > 1) parts[0].trim() else "Spaces Music"
+                                  val title = if (parts.size > 1) parts[1].trim() else clean
+
+                                  val directMp3 = if (href.contains(".mp3")) href else ""
+                                  if (parsed.none { it.title == title && it.artist == artist }) {
+                                      parsed.add(SpaceTrack(title, artist, href, directMp3))
                                   }
+                                  if (parsed.size >= 40) break
                               }
-                              if (foundTracks.size >= 25) break
+                              if (parsed.isNotEmpty()) break
                           }
+                          parsed
+                      }
 
-                          withContext(Dispatchers.Main) {
-                              trackList.clear()
-                              adapter.clear()
-                              if (foundTracks.isNotEmpty()) {
-                                  trackList.addAll(foundTracks)
-                                  adapter.addAll(foundTracks.map { "▶ " + it.title })
-                                  tvStatus.text = "Найдено треков: ${foundTracks.size}"
-                              } else {
-                                  tvStatus.text = "Ничего не найдено."
-                              }
-                          }
+                      tvMirror.text = activeMirror.removePrefix("https://")
+                      tracks.clear()
+                      tracks.addAll(resultList)
+                      adapter.notifyDataSetChanged()
 
-                      } catch (e: Exception) {
-                          withContext(Dispatchers.Main) {
-                              tvStatus.text = "Ошибка соединения со Spaces."
-                          }
+                      if (tracks.isNotEmpty()) {
+                          tvStatus.text = "Найдено треков: ${tracks.size}"
+                      } else {
+                          tvStatus.text = "Ничего не найдено (либо зеркала временно недоступны без VPN)"
                       }
                   }
               }
 
-              private fun playTrack(index: Int, tvCurrent: TextView, btnPlay: Button) {
-                  if (index !in trackList.indices) return
+              private fun playTrackAt(index: Int) {
+                  if (index !in tracks.indices) return
                   currentIndex = index
-                  val track = trackList[index]
+                  adapter.selectedIndex = index
+                  adapter.notifyDataSetChanged()
 
-                  tvCurrent.text = track.title
-                  btnPlay.text = "Пауза"
+                  val track = tracks[index]
+                  tvNowPlayingTitle.text = track.title
+                  tvNowPlayingSub.text = "Загрузка аудиопотока..."
 
-                  val mediaItem = MediaItem.fromUri(track.url)
-                  player.setMediaItem(mediaItem)
-                  player.prepare()
-                  player.play()
+                  uiScope.launch {
+                      val mp3Url = withContext(Dispatchers.IO) {
+                          if (track.resolvedMp3Url.isNotEmpty()) {
+                              return@withContext track.resolvedMp3Url
+                          }
+                          // Если это ссылка на страницу трека (/music/view/...), достаём из неё прямую ссылку на .mp3
+                          val html = fetchHtmlWithMirrorFallback(track.pageOrDirectUrl) ?: return@withContext ""
+                          val doc = Jsoup.parse(html, activeMirror)
+
+                          var foundUrl = ""
+                          val audio = doc.selectFirst("audio[src], audio source[src]")
+                          if (audio != null) {
+                              foundUrl = audio.absUrl("src").ifEmpty { audio.attr("src") }
+                          }
+                          if (foundUrl.isEmpty()) {
+                              val dlLink = doc.selectFirst("a[href*=.mp3], a[href*=/music/download/], a.download_link")
+                              if (dlLink != null) {
+                                  foundUrl = dlLink.absUrl("href").ifEmpty { activeMirror + dlLink.attr("href") }
+                              }
+                          }
+                          if (foundUrl.startsWith("//")) foundUrl = "https:$foundUrl"
+                          else if (foundUrl.startsWith("/")) foundUrl = activeMirror + foundUrl
+
+                          track.resolvedMp3Url = foundUrl
+                          foundUrl
+                      }
+
+                      if (mp3Url.isNotEmpty()) {
+                          tvNowPlayingSub.text = track.artist
+                          player.setMediaItem(MediaItem.fromUri(mp3Url))
+                          player.prepare()
+                          player.play()
+                      } else {
+                          tvNowPlayingSub.text = "Не удалось получить прямую ссылку на MP3"
+                      }
+                  }
+              }
+
+              private fun playNext() {
+                  if (tracks.isNotEmpty()) {
+                      val next = if (currentIndex + 1 < tracks.size) currentIndex + 1 else 0
+                      playTrackAt(next)
+                  }
+              }
+
+              private fun playPrev() {
+                  if (tracks.isNotEmpty()) {
+                      val prev = if (currentIndex - 1 >= 0) currentIndex - 1 else tracks.size - 1
+                      playTrackAt(prev)
+                  }
+              }
+
+              private fun formatTime(ms: Long): String {
+                  if (ms <= 0) return "0:00"
+                  val totalSec = ms / 1000
+                  val min = totalSec / 60
+                  val sec = totalSec % 60
+                  return String.format("%d:%02d", min, sec)
               }
 
               override fun onDestroy() {
-                  player.release()
                   super.onDestroy()
+                  handler.removeCallbacksAndMessages(null)
+                  uiScope.cancel()
+                  player.release()
+              }
+
+              inner class TrackAdapter(
+                  private val items: List<SpaceTrack>,
+                  private val onClick: (Int) -> Unit
+              ) : RecyclerView.Adapter<TrackAdapter.VH>() {
+
+                  var selectedIndex = -1
+
+                  inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+                      val tvTitle: TextView = v.findViewById(R.id.tvTitle)
+                      val tvSubtitle: TextView = v.findViewById(R.id.tvSubtitle)
+                      val tvPlayIcon: TextView = v.findViewById(R.id.tvPlayIcon)
+                  }
+
+                  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+                      val v = LayoutInflater.from(parent.context).inflate(R.layout.item_track, parent, false)
+                      return VH(v)
+                  }
+
+                  override fun onBindViewHolder(holder: VH, position: Int) {
+                      val item = items[position]
+                      holder.tvTitle.text = item.title
+                      holder.tvSubtitle.text = item.artist
+                      val isSelected = position == selectedIndex
+                      holder.tvTitle.setTextColor(if (isSelected) 0xFFFFCC00.toInt() else 0xFFFFFFFF.toInt())
+                      holder.tvPlayIcon.text = if (isSelected) "⏸" else "▶"
+                      holder.itemView.setOnClickListener { onClick(position) }
+                  }
+
+                  override fun getItemCount(): Int = items.size
               }
           }
           EOF
@@ -402,5 +850,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SpacesPlayer-APK
+          name: SpacesPlayer-YandexStyle-APK
           path: app/build/outputs/apk/debug/*.apk
