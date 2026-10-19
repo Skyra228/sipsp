@@ -9,9 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -23,12 +20,13 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Auto-fix project files and icons
+      - name: Generate full project from scratch
         run: |
-          # Удаляем конфликтующие старые настройки враппера и каталогов
-          rm -rf gradle gradlew gradlew.bat gradle.properties
+          # Создаем всю структуру папок с нуля
+          mkdir -p app/src/main/java/com/example/spacesplayer
+          mkdir -p app/src/main/res/layout
 
-          # Записываем чистый settings.gradle.kts
+          # 1. settings.gradle.kts
           cat << 'EOF' > settings.gradle.kts
           pluginManagement {
               repositories {
@@ -48,7 +46,7 @@ jobs:
           include(":app")
           EOF
 
-          # Записываем чистый корневой build.gradle.kts
+          # 2. Корневой build.gradle.kts
           cat << 'EOF' > build.gradle.kts
           plugins {
               id("com.android.application") version "8.2.2" apply false
@@ -56,13 +54,13 @@ jobs:
           }
           EOF
 
-          # Записываем gradle.properties
+          # 3. gradle.properties
           cat << 'EOF' > gradle.properties
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           android.useAndroidX=true
           EOF
 
-          # Записываем чистый app/build.gradle.kts
+          # 4. app/build.gradle.kts
           cat << 'EOF' > app/build.gradle.kts
           plugins {
               id("com.android.application")
@@ -98,7 +96,7 @@ jobs:
           }
           EOF
 
-          # Заменяем отсутствующую иконку @mipmap на встроенную системную @android:drawable/ic_media_play
+          # 5. AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -120,6 +118,279 @@ jobs:
                   </activity>
               </application>
           </manifest>
+          EOF
+
+          # 6. Разметка экрана activity_main.xml
+          cat << 'EOF' > app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:background="#0F1117"
+              android:padding="16dp">
+
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="SPACES MUSIC"
+                  android:textColor="#60A5FA"
+                  android:textSize="20sp"
+                  android:textStyle="bold"
+                  android:layout_gravity="center_horizontal"
+                  android:layout_marginBottom="12dp" />
+
+              <HorizontalScrollView
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:scrollbars="none"
+                  android:layout_marginBottom="12dp">
+                  <LinearLayout
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal">
+                      <Button android:id="@+id/btnClub" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Клубняк" android:layout_marginEnd="6dp" />
+                      <Button android:id="@+id/btnBass" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Басы" android:layout_marginEnd="6dp" />
+                      <Button android:id="@+id/btnRap" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Рэп" android:layout_marginEnd="6dp" />
+                      <Button android:id="@+id/btnRock" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Рок" />
+                  </LinearLayout>
+              </HorizontalScrollView>
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:layout_marginBottom="10dp">
+                  <EditText
+                      android:id="@+id/etSearch"
+                      android:layout_width="0dp"
+                      android:layout_height="46dp"
+                      android:layout_weight="1"
+                      android:background="#1E232E"
+                      android:hint="Поиск трека..."
+                      android:textColor="#FFFFFF"
+                      android:textColorHint="#9CA3AF"
+                      android:paddingStart="12dp"
+                      android:paddingEnd="12dp" />
+                  <Button
+                      android:id="@+id/btnSearch"
+                      android:layout_width="wrap_content"
+                      android:layout_height="46dp"
+                      android:text="Найти"
+                      android:layout_marginStart="8dp" />
+              </LinearLayout>
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:background="#181B24"
+                  android:orientation="vertical"
+                  android:padding="12dp"
+                  android:layout_marginBottom="10dp">
+
+                  <TextView
+                      android:id="@+id/tvCurrentTrack"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="Ничего не выбрано"
+                      android:textColor="#60A5FA"
+                      android:textStyle="bold"
+                      android:singleLine="true"
+                      android:ellipsize="marquee"
+                      android:layout_marginBottom="8dp" />
+
+                  <Button
+                      android:id="@+id/btnPlayPause"
+                      android:layout_width="match_parent"
+                      android:layout_height="40dp"
+                      android:text="Воспроизведение" />
+              </LinearLayout>
+
+              <TextView
+                  android:id="@+id/tvStatus"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:text="Готов к поиску"
+                  android:textColor="#9CA3AF"
+                  android:textSize="12sp"
+                  android:layout_marginBottom="6dp" />
+
+              <ListView
+                  android:id="@+id/lvTracks"
+                  android:layout_width="match_parent"
+                  android:layout_height="0dp"
+                  android:layout_weight="1"
+                  android:divider="#262B3A"
+                  android:dividerHeight="1dp" />
+
+          </LinearLayout>
+          EOF
+
+          # 7. Код плеера MainActivity.kt
+          cat << 'EOF' > app/src/main/java/com/example/spacesplayer/MainActivity.kt
+          package com.example.spacesplayer
+
+          import android.os.Bundle
+          import android.widget.*
+          import androidx.appcompat.app.AppCompatActivity
+          import androidx.media3.common.MediaItem
+          import androidx.media3.common.Player
+          import androidx.media3.exoplayer.ExoPlayer
+          import kotlinx.coroutines.CoroutineScope
+          import kotlinx.coroutines.Dispatchers
+          import kotlinx.coroutines.launch
+          import kotlinx.coroutines.withContext
+          import okhttp3.OkHttpClient
+          import okhttp3.Request
+          import org.jsoup.Jsoup
+          import java.net.URLEncoder
+
+          data class AudioTrack(val title: String, val url: String)
+
+          class MainActivity : AppCompatActivity() {
+
+              private lateinit var player: ExoPlayer
+              private val httpClient = OkHttpClient.Builder().followRedirects(true).build()
+              private val trackList = ArrayList<AudioTrack>()
+              private lateinit var adapter: ArrayAdapter<String>
+              private var currentIndex = -1
+
+              private val SPACES_BASE = "https://spaces.im"
+
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  setContentView(R.layout.activity_main)
+
+                  player = ExoPlayer.Builder(this).build()
+
+                  val etSearch = findViewById<EditText>(R.id.etSearch)
+                  val btnSearch = findViewById<Button>(R.id.btnSearch)
+                  val tvStatus = findViewById<TextView>(R.id.tvStatus)
+                  val tvCurrentTrack = findViewById<TextView>(R.id.tvCurrentTrack)
+                  val btnPlayPause = findViewById<Button>(R.id.btnPlayPause)
+                  val lvTracks = findViewById<ListView>(R.id.lvTracks)
+
+                  adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, ArrayList<String>())
+                  lvTracks.adapter = adapter
+
+                  btnPlayPause.setOnClickListener {
+                      if (player.isPlaying) {
+                          player.pause()
+                          btnPlayPause.text = "Играть"
+                      } else {
+                          player.play()
+                          btnPlayPause.text = "Пауза"
+                      }
+                  }
+
+                  player.addListener(object : Player.Listener {
+                      override fun onPlaybackStateChanged(state: Int) {
+                          if (state == Player.STATE_ENDED) {
+                              if (currentIndex + 1 < trackList.size) {
+                                  playTrack(currentIndex + 1, tvCurrentTrack, btnPlayPause)
+                              }
+                          }
+                      }
+                  })
+
+                  findViewById<Button>(R.id.btnClub).setOnClickListener { searchSpaces("Клубняк 2008", tvStatus) }
+                  findViewById<Button>(R.id.btnBass).setOnClickListener { searchSpaces("Басы в тачку", tvStatus) }
+                  findViewById<Button>(R.id.btnRap).setOnClickListener { searchSpaces("Русский рэп", tvStatus) }
+                  findViewById<Button>(R.id.btnRock).setOnClickListener { searchSpaces("Русский рок", tvStatus) }
+
+                  btnSearch.setOnClickListener {
+                      val q = etSearch.text.toString().trim()
+                      if (q.isNotEmpty()) searchSpaces(q, tvStatus)
+                  }
+
+                  lvTracks.setOnItemClickListener { _, _, position, _ ->
+                      playTrack(position, tvCurrentTrack, btnPlayPause)
+                  }
+              }
+
+              private fun searchSpaces(query: String, tvStatus: TextView) {
+                  tvStatus.text = "Ищем '$query' на Spaces..."
+
+                  CoroutineScope(Dispatchers.IO).launch {
+                      val foundTracks = ArrayList<AudioTrack>()
+                      try {
+                          val encoded = URLEncoder.encode(query, "UTF-8")
+                          val searchUrl = "$SPACES_BASE/mysite/find/?search=$encoded&type=music"
+
+                          val req = Request.Builder()
+                              .url(searchUrl)
+                              .header("User-Agent", "Mozilla/5.0 (Linux; Android 10) Chrome/120.0.0.0 Mobile")
+                              .build()
+
+                          val html = httpClient.newCall(req).execute().body?.string() ?: ""
+                          val doc = Jsoup.parse(html)
+
+                          val items = doc.select(".main_item, .f-item, li, tr, div")
+
+                          for (item in items) {
+                              var streamUrl = ""
+                              val audioTag = item.selectFirst("audio, audio source")
+                              if (audioTag != null) {
+                                  streamUrl = audioTag.attr("src").ifEmpty { audioTag.attr("data-src") }
+                              } else {
+                                  val dl = item.selectFirst("a[href*=.mp3], a[href*=download]")
+                                  if (dl != null) streamUrl = dl.attr("href")
+                              }
+
+                              if (streamUrl.isNotEmpty()) {
+                                  if (streamUrl.startsWith("//")) streamUrl = "https:$streamUrl"
+                                  else if (streamUrl.startsWith("/")) streamUrl = SPACES_BASE + streamUrl
+
+                                  val titleTag = item.selectFirst("a, span")
+                                  var title = titleTag?.text()?.trim() ?: "Аудиозапись"
+                                  title = title.replace(Regex("\\.mp3$", RegexOption.IGNORE_CASE), "")
+
+                                  if (foundTracks.none { it.url == streamUrl }) {
+                                      foundTracks.add(AudioTrack(title, streamUrl))
+                                  }
+                              }
+                              if (foundTracks.size >= 25) break
+                          }
+
+                          withContext(Dispatchers.Main) {
+                              trackList.clear()
+                              adapter.clear()
+                              if (foundTracks.isNotEmpty()) {
+                                  trackList.addAll(foundTracks)
+                                  adapter.addAll(foundTracks.map { "▶ " + it.title })
+                                  tvStatus.text = "Найдено треков: ${foundTracks.size}"
+                              } else {
+                                  tvStatus.text = "Ничего не найдено."
+                              }
+                          }
+
+                      } catch (e: Exception) {
+                          withContext(Dispatchers.Main) {
+                              tvStatus.text = "Ошибка соединения со Spaces."
+                          }
+                      }
+                  }
+              }
+
+              private fun playTrack(index: Int, tvCurrent: TextView, btnPlay: Button) {
+                  if (index !in trackList.indices) return
+                  currentIndex = index
+                  val track = trackList[index]
+
+                  tvCurrent.text = track.title
+                  btnPlay.text = "Пауза"
+
+                  val mediaItem = MediaItem.fromUri(track.url)
+                  player.setMediaItem(mediaItem)
+                  player.prepare()
+                  player.play()
+              }
+
+              override fun onDestroy() {
+                  player.release()
+                  super.onDestroy()
+              }
+          }
           EOF
 
       - name: Build APK
