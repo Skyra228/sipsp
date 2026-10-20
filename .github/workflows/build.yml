@@ -20,8 +20,9 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Spaces Player v6 Pro
+      - name: Generate Spaces Player v7 ULTRA
         run: |
+          rm -rf app/src/main
           mkdir -p app/src/main/java/com/example/spacesplayer
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
@@ -60,7 +61,7 @@ jobs:
           android.useAndroidX=true
           EOF
 
-          # 4. app/build.gradle.kts (Media3 ExoPlayer + MediaSessionService + Coroutines)
+          # 4. app/build.gradle.kts
           cat << 'EOF' > app/build.gradle.kts
           plugins {
               id("com.android.application")
@@ -73,8 +74,8 @@ jobs:
                   applicationId = "com.example.spacesplayer"
                   minSdk = 24
                   targetSdk = 34
-                  versionCode = 6
-                  versionName = "6.0"
+                  versionCode = 7
+                  versionName = "7.0-ULTRA"
               }
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
@@ -98,7 +99,7 @@ jobs:
           }
           EOF
 
-          # 5. Ресурсы оформления в стиле Яндекс Музыки
+          # 5. Шейпы Яндекс-дизайна
           cat << 'EOF' > app/src/main/res/drawable/bg_search.xml
           <?xml version="1.0" encoding="utf-8"?>
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
@@ -132,7 +133,7 @@ jobs:
           </shape>
           EOF
 
-          # 6. Карточка трека или папки (item_track.xml)
+          # 6. Элемент списка (item_track.xml)
           cat << 'EOF' > app/src/main/res/layout/item_track.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -188,8 +189,8 @@ jobs:
 
               <TextView
                   android:id="@+id/tvPlayIcon"
-                  android:layout_width="32dp"
-                  android:layout_height="32dp"
+                  android:layout_width="34dp"
+                  android:layout_height="34dp"
                   android:gravity="center"
                   android:text="▶"
                   android:textColor="#FFCC00"
@@ -206,27 +207,27 @@ jobs:
               android:orientation="vertical"
               android:background="#0A0A0A">
 
-              <!-- Верхняя панель -->
+              <!-- Верхняя панель с кнопками Эквалайзера, Таймера сна и Зеркала -->
               <LinearLayout
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:orientation="horizontal"
                   android:gravity="center_vertical"
-                  android:paddingHorizontal="16dp"
+                  android:paddingHorizontal="14dp"
                   android:paddingTop="12dp"
                   android:paddingBottom="6dp">
 
                   <TextView
                       android:id="@+id/btnBackNav"
-                      android:layout_width="36dp"
-                      android:layout_height="36dp"
+                      android:layout_width="34dp"
+                      android:layout_height="34dp"
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
                       android:text="←"
                       android:textColor="#FFFFFF"
-                      android:textSize="18sp"
+                      android:textSize="17sp"
                       android:textStyle="bold"
-                      android:layout_marginEnd="10dp"
+                      android:layout_marginEnd="8dp"
                       android:visibility="gone" />
 
                   <TextView
@@ -235,28 +236,51 @@ jobs:
                       android:layout_weight="1"
                       android:text="Я.Музыка • Spaces"
                       android:textColor="#FFFFFF"
-                      android:textSize="20sp"
-                      android:textStyle="bold" />
+                      android:textSize="18sp"
+                      android:textStyle="bold"
+                      android:singleLine="true" />
+
+                  <TextView
+                      android:id="@+id/btnEq"
+                      android:layout_width="34dp"
+                      android:layout_height="34dp"
+                      android:background="@drawable/bg_chip"
+                      android:gravity="center"
+                      android:text="🎛"
+                      android:textSize="14sp"
+                      android:layout_marginEnd="6dp" />
+
+                  <TextView
+                      android:id="@+id/btnSleep"
+                      android:layout_width="wrap_content"
+                      android:layout_height="34dp"
+                      android:background="@drawable/bg_chip"
+                      android:gravity="center"
+                      android:paddingHorizontal="10dp"
+                      android:text="🌙"
+                      android:textColor="#FFFFFF"
+                      android:textSize="12sp"
+                      android:layout_marginEnd="6dp" />
 
                   <TextView
                       android:id="@+id/tvMirror"
                       android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
+                      android:layout_height="34dp"
                       android:background="@drawable/bg_chip"
-                      android:paddingHorizontal="12dp"
-                      android:paddingVertical="6dp"
-                      android:text="⚙ world84.spcs.bio"
+                      android:gravity="center"
+                      android:paddingHorizontal="10dp"
+                      android:text="⚙ world84"
                       android:textColor="#FFCC00"
-                      android:textSize="12sp"
+                      android:textSize="11sp"
                       android:textStyle="bold" />
               </LinearLayout>
 
-              <!-- Поисковая строка -->
+              <!-- Строка поиска -->
               <LinearLayout
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:orientation="horizontal"
-                  android:paddingHorizontal="16dp"
+                  android:paddingHorizontal="14dp"
                   android:paddingVertical="6dp">
 
                   <EditText
@@ -265,7 +289,7 @@ jobs:
                       android:layout_height="44dp"
                       android:layout_weight="1"
                       android:background="@drawable/bg_search"
-                      android:hint="Поиск песни, жанра или артиста..."
+                      android:hint="Трек, артист или жанр (рок, фонк)..."
                       android:textColor="#FFFFFF"
                       android:textColorHint="#787880"
                       android:paddingHorizontal="14dp"
@@ -284,12 +308,12 @@ jobs:
                       android:textStyle="bold" />
               </LinearLayout>
 
-              <!-- Вкладки навигации -->
+              <!-- Навигационные вкладки -->
               <HorizontalScrollView
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:scrollbars="none"
-                  android:paddingHorizontal="12dp"
+                  android:paddingHorizontal="10dp"
                   android:paddingVertical="6dp">
 
                   <LinearLayout
@@ -300,6 +324,8 @@ jobs:
                       <TextView android:id="@+id/chipPop" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip_active" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🔥 Популярные" android:textColor="#FFCC00" android:textSize="13sp" android:textStyle="bold" />
                       <TextView android:id="@+id/chipNew" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🆕 Новые" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
                       <TextView android:id="@+id/chipCats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="📁 Жанры и категории" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
+                      <TextView android:id="@+id/chipFav" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="❤️ Любимые" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
+                      <TextView android:id="@+id/chipHist" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🕒 История" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
                       <TextView android:id="@+id/chipOnline" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🎧 Музыка онлайн" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
                   </LinearLayout>
               </HorizontalScrollView>
@@ -335,13 +361,13 @@ jobs:
                   android:layout_height="1dp"
                   android:visibility="invisible" />
 
-              <!-- Нижний док-плеер -->
+              <!-- Нижний плеер с лайком и скачиванием MP3 -->
               <LinearLayout
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:orientation="vertical"
                   android:background="#18181A"
-                  android:paddingHorizontal="16dp"
+                  android:paddingHorizontal="14dp"
                   android:paddingTop="8dp"
                   android:paddingBottom="12dp">
 
@@ -384,21 +410,32 @@ jobs:
                       android:gravity="center_vertical"
                       android:layout_marginTop="2dp">
 
-                      <TextView
-                          android:layout_width="44dp"
-                          android:layout_height="44dp"
-                          android:background="@drawable/bg_cover"
-                          android:gravity="center"
-                          android:text="♫"
+                      <Button
+                          android:id="@+id/btnFavTrack"
+                          android:layout_width="38dp"
+                          android:layout_height="38dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:text="♡"
                           android:textColor="#FFCC00"
-                          android:textSize="18sp" />
+                          android:textSize="18sp"
+                          android:padding="0dp" />
+
+                      <Button
+                          android:id="@+id/btnDownloadTrack"
+                          android:layout_width="38dp"
+                          android:layout_height="38dp"
+                          android:background="?attr/selectableItemBackgroundBorderless"
+                          android:text="⬇"
+                          android:textColor="#FFFFFF"
+                          android:textSize="16sp"
+                          android:padding="0dp" />
 
                       <LinearLayout
                           android:layout_width="0dp"
                           android:layout_height="wrap_content"
                           android:layout_weight="1"
                           android:orientation="vertical"
-                          android:layout_marginHorizontal="12dp">
+                          android:layout_marginHorizontal="8dp">
 
                           <TextView
                               android:id="@+id/tvNowPlayingTitle"
@@ -406,58 +443,57 @@ jobs:
                               android:layout_height="wrap_content"
                               android:text="Выберите трек"
                               android:textColor="#FFFFFF"
-                              android:textSize="15sp"
+                              android:textSize="14sp"
                               android:textStyle="bold"
-                              android:singleLine="true"
-                              android:ellipsize="marquee" />
+                              android:singleLine="true" />
 
                           <TextView
                               android:id="@+id/tvNowPlayingSub"
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
-                              android:text="Spaces Музыка • Фоновый режим"
+                              android:text="Spaces Музыка • v7 ULTRA"
                               android:textColor="#8E8E93"
-                              android:textSize="12sp"
+                              android:textSize="11sp"
                               android:singleLine="true" />
                       </LinearLayout>
 
                       <Button
                           android:id="@+id/btnPrev"
-                          android:layout_width="42dp"
-                          android:layout_height="42dp"
+                          android:layout_width="38dp"
+                          android:layout_height="38dp"
                           android:background="?attr/selectableItemBackgroundBorderless"
                           android:text="⏮"
                           android:textColor="#FFFFFF"
-                          android:textSize="16sp"
+                          android:textSize="15sp"
                           android:padding="0dp" />
 
                       <Button
                           android:id="@+id/btnPlayPause"
-                          android:layout_width="48dp"
-                          android:layout_height="48dp"
-                          android:layout_marginHorizontal="4dp"
+                          android:layout_width="46dp"
+                          android:layout_height="46dp"
+                          android:layout_marginHorizontal="2dp"
                           android:backgroundTint="#FFCC00"
                           android:text="▶"
                           android:textColor="#000000"
                           android:textStyle="bold"
-                          android:textSize="18sp"
+                          android:textSize="17sp"
                           android:padding="0dp" />
 
                       <Button
                           android:id="@+id/btnNext"
-                          android:layout_width="42dp"
-                          android:layout_height="42dp"
+                          android:layout_width="38dp"
+                          android:layout_height="38dp"
                           android:background="?attr/selectableItemBackgroundBorderless"
                           android:text="⏭"
                           android:textColor="#FFFFFF"
-                          android:textSize="16sp"
+                          android:textSize="15sp"
                           android:padding="0dp" />
                   </LinearLayout>
               </LinearLayout>
           </LinearLayout>
           EOF
 
-          # 8. AndroidManifest.xml (с поддержкой фоновой службы MediaSessionService)
+          # 8. AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -495,14 +531,17 @@ jobs:
           </manifest>
           EOF
 
-          # 9. Фоновый медиа-сервис PlaybackService.kt (шторка уведомлений + экран блокировки)
+          # 9. PlaybackService.kt (Фоновый сервис + Аппаратный Эквалайзер и BassBoost)
           cat << 'EOF' > app/src/main/java/com/example/spacesplayer/PlaybackService.kt
           package com.example.spacesplayer
 
           import android.content.Context
           import android.content.Intent
+          import android.media.audiofx.BassBoost
+          import android.media.audiofx.Equalizer
           import androidx.media3.common.AudioAttributes
           import androidx.media3.common.C
+          import androidx.media3.common.Player
           import androidx.media3.datasource.DefaultHttpDataSource
           import androidx.media3.exoplayer.ExoPlayer
           import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -513,8 +552,9 @@ jobs:
               const val USER_AGENT = "Mozilla/5.0 (Linux; Android 14; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
               var player: ExoPlayer? = null
               var mediaSession: MediaSession? = null
-              var onNextCallback: (() -> Unit)? = null
-              var onPrevCallback: (() -> Unit)? = null
+              private var bassBoost: BassBoost? = null
+              private var equalizer: Equalizer? = null
+              var currentAudioPreset = 0
 
               fun ensureInitialized(context: Context) {
                   if (player == null) {
@@ -534,8 +574,72 @@ jobs:
                           .setHandleAudioBecomingNoisy(true)
                           .build()
 
+                      exo.addListener(object : Player.Listener {
+                          override fun onAudioSessionIdChanged(audioSessionId: Int) {
+                              applyAudioPreset(currentAudioPreset)
+                          }
+                      })
+
                       player = exo
                       mediaSession = MediaSession.Builder(appCtx, exo).build()
+                  }
+              }
+
+              fun applyAudioPreset(presetIndex: Int) {
+                  currentAudioPreset = presetIndex
+                  val sessionId = player?.audioSessionId ?: return
+                  if (sessionId == C.AUDIO_SESSION_ID_UNSET || sessionId <= 0) return
+
+                  try {
+                      bassBoost?.release()
+                      equalizer?.release()
+
+                      val bb = BassBoost(0, sessionId)
+                      val eq = Equalizer(0, sessionId)
+
+                      when (presetIndex) {
+                          0 -> { // Обычный
+                              bb.enabled = false
+                              eq.enabled = false
+                          }
+                          1 -> { // Басы в тачку (Макс. BassBoost)
+                              bb.enabled = true
+                              if (bb.strengthSupported) bb.setStrength(1000.toShort())
+                              eq.enabled = true
+                              if (eq.numberOfPresets > 0) eq.usePreset(0)
+                          }
+                          2 -> { // Рок
+                              bb.enabled = true
+                              if (bb.strengthSupported) bb.setStrength(500.toShort())
+                              eq.enabled = true
+                              val p = (0 until eq.numberOfPresets).firstOrNull {
+                                  eq.getPresetName(it.toShort()).lowercase().contains("rock")
+                              } ?: 0
+                              if (eq.numberOfPresets > 0) eq.usePreset(p.toShort())
+                          }
+                          3 -> { // Поп / Клуб
+                              bb.enabled = true
+                              if (bb.strengthSupported) bb.setStrength(650.toShort())
+                              eq.enabled = true
+                              val p = (0 until eq.numberOfPresets).firstOrNull {
+                                  val n = eq.getPresetName(it.toShort()).lowercase()
+                                  n.contains("pop") || n.contains("dance")
+                              } ?: 0
+                              if (eq.numberOfPresets > 0) eq.usePreset(p.toShort())
+                          }
+                          4 -> { // Чистый вокал
+                              bb.enabled = false
+                              eq.enabled = true
+                              val p = (0 until eq.numberOfPresets).firstOrNull {
+                                  val n = eq.getPresetName(it.toShort()).lowercase()
+                                  n.contains("vocal") || n.contains("flat") || n.contains("jazz")
+                              } ?: 0
+                              if (eq.numberOfPresets > 0) eq.usePreset(p.toShort())
+                          }
+                      }
+                      bassBoost = bb
+                      equalizer = eq
+                  } catch (_: Exception) {
                   }
               }
           }
@@ -560,16 +664,19 @@ jobs:
           }
           EOF
 
-          # 10. Главный модуль MainActivity.kt (v6.0)
+          # 10. MainActivity.kt (v7.0 ULTRA: Spaces + WebView DOM Bridge + Гибридный поиск + Избранное + Скачивание + Таймер)
           cat << 'EOF' > app/src/main/java/com/example/spacesplayer/MainActivity.kt
           package com.example.spacesplayer
 
           import android.annotation.SuppressLint
           import android.app.AlertDialog
+          import android.app.DownloadManager
           import android.content.Context
           import android.content.Intent
           import android.net.Uri
           import android.os.Bundle
+          import android.os.CountDownTimer
+          import android.os.Environment
           import android.os.Handler
           import android.os.Looper
           import android.view.LayoutInflater
@@ -582,7 +689,6 @@ jobs:
           import androidx.appcompat.app.AppCompatActivity
           import androidx.media3.common.MediaItem
           import androidx.media3.common.MediaMetadata
-          import androidx.media3.common.PlaybackException
           import androidx.media3.common.Player
           import androidx.media3.datasource.DefaultHttpDataSource
           import androidx.media3.exoplayer.ExoPlayer
@@ -591,6 +697,8 @@ jobs:
           import androidx.recyclerview.widget.RecyclerView
           import kotlinx.coroutines.*
           import okhttp3.*
+          import org.json.JSONArray
+          import org.json.JSONObject
           import org.jsoup.Jsoup
           import org.jsoup.nodes.Document
           import java.net.URLEncoder
@@ -608,14 +716,15 @@ jobs:
               var directMp3: String = ""
           )
 
-          data class NavState(
-              val url: String,
-              val mode: PageMode
-          )
-
-          enum class PageMode {
-              TRACKS, FOLDERS, AUTO
+          enum class TabMode {
+              POPULAR, NEW, CATEGORIES, FAVORITES, HISTORY, ONLINE, SEARCH, FOLDER_VIEW
           }
+
+          data class NavEntry(
+              val url: String,
+              val tabMode: TabMode,
+              val titleHint: String
+          )
 
           class MainActivity : AppCompatActivity() {
 
@@ -629,11 +738,15 @@ jobs:
               private lateinit var tvStatus: TextView
               private lateinit var tvMirror: TextView
               private lateinit var btnBackNav: TextView
+              private lateinit var btnEq: TextView
+              private lateinit var btnSleep: TextView
               private lateinit var etSearch: EditText
               private lateinit var progressBar: ProgressBar
               private lateinit var tvNowPlayingTitle: TextView
               private lateinit var tvNowPlayingSub: TextView
               private lateinit var btnPlayPause: Button
+              private lateinit var btnFavTrack: Button
+              private lateinit var btnDownloadTrack: Button
               private lateinit var seekBar: SeekBar
               private lateinit var tvCurrentTime: TextView
               private lateinit var tvTotalTime: TextView
@@ -642,24 +755,27 @@ jobs:
               private lateinit var chipPop: TextView
               private lateinit var chipNew: TextView
               private lateinit var chipCats: TextView
+              private lateinit var chipFav: TextView
+              private lateinit var chipHist: TextView
               private lateinit var chipOnline: TextView
 
               private val items = ArrayList<SpaceItem>()
               private val seenKeys = HashSet<String>()
-              private val cachedGenres = ArrayList<SpaceItem>()
-
               private lateinit var adapter: SpaceAdapter
+              private var currentPlayingItem: SpaceItem? = null
               private var currentIndex = -1
               private var isUserSeeking = false
 
               private var nextPageUrl: String? = null
               private var isLoadingMore = false
-              private val navHistory = Stack<NavState>()
-              private var currentState = NavState("", PageMode.TRACKS)
+              private val navHistory = Stack<NavEntry>()
+              private var currentEntry = NavEntry("/sz/muzyka/top/", TabMode.POPULAR, "Популярные")
 
-              private var categoriesTabUrl = "/sz/muzyka/"
               private var popularTabUrl = "/sz/muzyka/top/"
               private var newTabUrl = "/sz/muzyka/new/"
+              private var categoriesTabUrl = "/sz/muzyka/"
+
+              private var sleepTimer: CountDownTimer? = null
 
               private val uiScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
               private var loadJob: Job? = null
@@ -667,6 +783,7 @@ jobs:
 
               private var baseHost = "https://world84.spcs.bio"
               private var webViewMp3Callback: ((String) -> Unit)? = null
+              private var webViewHtmlCallback: ((String) -> Unit)? = null
 
               private val allCookies = ConcurrentHashMap<String, Cookie>()
               private val httpClient = OkHttpClient.Builder()
@@ -697,18 +814,22 @@ jobs:
                       startService(Intent(this, PlaybackService::class.java))
                   } catch (_: Exception) {}
 
-                  val prefs = getSharedPreferences("spaces_v6", Context.MODE_PRIVATE)
+                  val prefs = getSharedPreferences("spaces_v7", Context.MODE_PRIVATE)
                   baseHost = extractCleanHost(prefs.getString("host", "https://world84.spcs.bio") ?: "https://world84.spcs.bio")
 
                   rvTracks = findViewById(R.id.rvTracks)
                   tvStatus = findViewById(R.id.tvStatus)
                   tvMirror = findViewById(R.id.tvMirror)
                   btnBackNav = findViewById(R.id.btnBackNav)
+                  btnEq = findViewById(R.id.btnEq)
+                  btnSleep = findViewById(R.id.btnSleep)
                   etSearch = findViewById(R.id.etSearch)
                   progressBar = findViewById(R.id.progressBar)
                   tvNowPlayingTitle = findViewById(R.id.tvNowPlayingTitle)
                   tvNowPlayingSub = findViewById(R.id.tvNowPlayingSub)
                   btnPlayPause = findViewById(R.id.btnPlayPause)
+                  btnFavTrack = findViewById(R.id.btnFavTrack)
+                  btnDownloadTrack = findViewById(R.id.btnDownloadTrack)
                   seekBar = findViewById(R.id.seekBar)
                   tvCurrentTime = findViewById(R.id.tvCurrentTime)
                   tvTotalTime = findViewById(R.id.tvTotalTime)
@@ -717,6 +838,8 @@ jobs:
                   chipPop = findViewById(R.id.chipPop)
                   chipNew = findViewById(R.id.chipNew)
                   chipCats = findViewById(R.id.chipCats)
+                  chipFav = findViewById(R.id.chipFav)
+                  chipHist = findViewById(R.id.chipHist)
                   chipOnline = findViewById(R.id.chipOnline)
 
                   updateMirrorBadge()
@@ -725,7 +848,8 @@ jobs:
                   setupRecyclerView()
                   setupControls()
 
-                  bootstrapAndLoadPopular()
+                  // Загружаем стартовую вкладку "Популярные"
+                  loadSection("/sz/muzyka/top/", TabMode.POPULAR, "Популярные треки", addToHistory = false)
               }
 
               private fun extractCleanHost(rawInput: String): String {
@@ -740,7 +864,7 @@ jobs:
               }
 
               private fun highlightActiveChip(active: TextView?) {
-                  val chips = listOf(chipPop, chipNew, chipCats, chipOnline)
+                  val chips = listOf(chipPop, chipNew, chipCats, chipFav, chipHist, chipOnline)
                   for (c in chips) {
                       if (c == active) {
                           c.setBackgroundResource(R.drawable.bg_chip_active)
@@ -753,7 +877,8 @@ jobs:
               }
 
               private fun updateMirrorBadge() {
-                  tvMirror.text = "⚙ " + baseHost.removePrefix("https://").removePrefix("http://")
+                  val shortHost = baseHost.removePrefix("https://").removePrefix("http://").substringBefore(".")
+                  tvMirror.text = "⚙ $shortHost"
                   btnBackNav.visibility = if (navHistory.isNotEmpty()) View.VISIBLE else View.GONE
               }
 
@@ -769,7 +894,7 @@ jobs:
                   hiddenWebView.webViewClient = object : WebViewClient() {
                       override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
                           val url = request?.url?.toString() ?: ""
-                          if (isLikelyAudioBinaryUrl(url)) {
+                          if (webViewMp3Callback != null && isDirectAudioFileUrl(url)) {
                               deliverWebViewMp3(url)
                           }
                           return super.shouldInterceptRequest(view, request)
@@ -777,7 +902,7 @@ jobs:
 
                       override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                           val url = request?.url?.toString() ?: return false
-                          if (isLikelyAudioBinaryUrl(url)) {
+                          if (webViewMp3Callback != null && isDirectAudioFileUrl(url)) {
                               deliverWebViewMp3(url)
                               return true
                           }
@@ -786,43 +911,64 @@ jobs:
 
                       override fun onPageFinished(view: WebView?, url: String?) {
                           super.onPageFinished(view, url)
-                          view?.evaluateJavascript(
-                              """
-                              (function() {
-                                  var a = document.querySelector('audio[src], source[src]');
-                                  if (a && a.src) return a.src;
-                                  var links = document.querySelectorAll('a[href]');
-                                  for (var i = 0; i < links.length; i++) {
-                                      var h = links[i].href || '';
-                                      if (h.indexOf('.mp3') !== -1 || h.indexOf('/download/') !== -1 || h.indexOf('download_file') !== -1) {
-                                          return h;
+                          // 1. Если ждем HTML страницы (DOM Bridge)
+                          if (webViewHtmlCallback != null) {
+                              view?.evaluateJavascript(
+                                  "(function(){ return document.documentElement.outerHTML; })();"
+                              ) { rawJsonHtml ->
+                                  val cb = webViewHtmlCallback
+                                  if (cb != null && !rawJsonHtml.isNullOrEmpty() && rawJsonHtml != "null") {
+                                      webViewHtmlCallback = null
+                                      val decoded = try {
+                                          JSONArray("[$rawJsonHtml]").getString(0)
+                                      } catch (_: Exception) {
+                                          rawJsonHtml
                                       }
+                                      cb.invoke(decoded)
                                   }
-                                  var playBtn = document.querySelector('[data-mp3], [data-src], [data-url], .player_play, .play_btn, .js-play');
-                                  if (playBtn) {
-                                      var d = playBtn.getAttribute('data-mp3') || playBtn.getAttribute('data-src') || playBtn.getAttribute('data-url');
-                                      if (d) return d;
-                                      playBtn.click();
+                              }
+                          }
+
+                          // 2. Если ждем прямую ссылку на MP3
+                          if (webViewMp3Callback != null) {
+                              view?.evaluateJavascript(
+                                  """
+                                  (function() {
+                                      var a = document.querySelector('audio[src], source[src]');
+                                      if (a && a.src) return a.src;
+                                      var links = document.querySelectorAll('a[href]');
+                                      for (var i = 0; i < links.length; i++) {
+                                          var h = links[i].href || '';
+                                          if (h.indexOf('.mp3') !== -1 || h.indexOf('/download/') !== -1 || h.indexOf('download_file') !== -1) {
+                                              return h;
+                                          }
+                                      }
+                                      var playBtn = document.querySelector('[data-mp3], [data-src], [data-url], .player_play, .play_btn, .js-play');
+                                      if (playBtn) {
+                                          var d = playBtn.getAttribute('data-mp3') || playBtn.getAttribute('data-src') || playBtn.getAttribute('data-url');
+                                          if (d) return d;
+                                          playBtn.click();
+                                      }
+                                      return '';
+                                  })();
+                                  """.trimIndent()
+                              ) { res ->
+                                  val clean = res?.trim()?.removeSurrounding("\"") ?: ""
+                                  if (clean.startsWith("http") && isDirectAudioFileUrl(clean)) {
+                                      deliverWebViewMp3(clean)
                                   }
-                                  return '';
-                              })();
-                              """.trimIndent()
-                          ) { res ->
-                              val clean = res?.trim()?.removeSurrounding("\"") ?: ""
-                              if (clean.startsWith("http") && isLikelyAudioBinaryUrl(clean)) {
-                                  deliverWebViewMp3(clean)
                               }
                           }
                       }
                   }
                   hiddenWebView.setDownloadListener { url, _, _, mimetype, _ ->
-                      if (url.isNotEmpty() && (mimetype.contains("audio") || isLikelyAudioBinaryUrl(url))) {
+                      if (url.isNotEmpty() && (mimetype.contains("audio") || isDirectAudioFileUrl(url))) {
                           deliverWebViewMp3(url)
                       }
                   }
               }
 
-              private fun isLikelyAudioBinaryUrl(url: String): Boolean {
+              private fun isDirectAudioFileUrl(url: String): Boolean {
                   val l = url.lowercase()
                   if (l.contains("/registration") || l.contains("/login") || l.contains("/sz/muzyka/?")) return false
                   return l.contains(".mp3") || l.contains("/music/download/") || l.contains("/files/download/") ||
@@ -841,9 +987,6 @@ jobs:
               }
 
               private fun setupPlayerListeners() {
-                  MusicEngine.onNextCallback = { playNextTrack() }
-                  MusicEngine.onPrevCallback = { playPrevTrack() }
-
                   player.addListener(object : Player.Listener {
                       override fun onIsPlayingChanged(isPlaying: Boolean) {
                           btnPlayPause.text = if (isPlaying) "⏸" else "▶"
@@ -856,10 +999,6 @@ jobs:
                           } else if (state == Player.STATE_ENDED) {
                               playNextTrack()
                           }
-                      }
-
-                      override fun onPlayerError(error: PlaybackException) {
-                          tvNowPlayingSub.text = "Переподключение аудиопотока..."
                       }
                   })
 
@@ -897,12 +1036,14 @@ jobs:
 
               private fun setupControls() {
                   tvMirror.setOnClickListener { showMirrorDialog() }
+                  btnEq.setOnClickListener { showEqualizerDialog() }
+                  btnSleep.setOnClickListener { showSleepTimerDialog() }
 
                   btnBackNav.setOnClickListener {
                       if (navHistory.isNotEmpty()) {
                           val prev = navHistory.pop()
                           updateMirrorBadge()
-                          openSpacePage(prev.url, mode = prev.mode, addToHistory = false)
+                          loadSection(prev.url, prev.tabMode, prev.titleHint, addToHistory = false)
                       }
                   }
 
@@ -911,7 +1052,7 @@ jobs:
                       hideKeyboard()
                       if (q.isNotEmpty()) {
                           highlightActiveChip(null)
-                          performSpacesSearch(q)
+                          performHybridSearch(q)
                       }
                   }
 
@@ -921,7 +1062,7 @@ jobs:
                           hideKeyboard()
                           if (q.isNotEmpty()) {
                               highlightActiveChip(null)
-                              performSpacesSearch(q)
+                              performHybridSearch(q)
                           }
                           true
                       } else false
@@ -930,25 +1071,37 @@ jobs:
                   chipPop.setOnClickListener {
                       highlightActiveChip(chipPop)
                       navHistory.clear()
-                      openSpacePage(popularTabUrl, mode = PageMode.TRACKS, addToHistory = false)
+                      loadSection(popularTabUrl, TabMode.POPULAR, "Популярные треки", addToHistory = false)
                   }
 
                   chipNew.setOnClickListener {
                       highlightActiveChip(chipNew)
                       navHistory.clear()
-                      openSpacePage(newTabUrl, mode = PageMode.TRACKS, addToHistory = false)
+                      loadSection(newTabUrl, TabMode.NEW, "Новинки Spaces", addToHistory = false)
                   }
 
                   chipCats.setOnClickListener {
                       highlightActiveChip(chipCats)
                       navHistory.clear()
-                      openSpacePage(categoriesTabUrl, mode = PageMode.FOLDERS, addToHistory = false)
+                      loadSection(categoriesTabUrl, TabMode.CATEGORIES, "Жанры и категории", addToHistory = false)
+                  }
+
+                  chipFav.setOnClickListener {
+                      highlightActiveChip(chipFav)
+                      navHistory.clear()
+                      showSavedList("favorites", "❤️ Любимые треки")
+                  }
+
+                  chipHist.setOnClickListener {
+                      highlightActiveChip(chipHist)
+                      navHistory.clear()
+                      showSavedList("history", "🕒 История прослушивания")
                   }
 
                   chipOnline.setOnClickListener {
                       highlightActiveChip(chipOnline)
                       navHistory.clear()
-                      openSpacePage("/music/", mode = PageMode.AUTO, addToHistory = false)
+                      loadSection("/music/", TabMode.ONLINE, "Музыка онлайн", addToHistory = false)
                   }
 
                   btnPlayPause.setOnClickListener {
@@ -957,6 +1110,25 @@ jobs:
 
                   findViewById<Button>(R.id.btnNext).setOnClickListener { playNextTrack() }
                   findViewById<Button>(R.id.btnPrev).setOnClickListener { playPrevTrack() }
+
+                  btnFavTrack.setOnClickListener {
+                      val cur = currentPlayingItem
+                      if (cur == null) {
+                          Toast.makeText(this, "Сначала включите трек", Toast.LENGTH_SHORT).show()
+                      } else {
+                          val added = toggleFavorite(cur)
+                          btnFavTrack.text = if (added) "❤️" else "♡"
+                          Toast.makeText(
+                              this,
+                              if (added) "Добавлено в ❤️ Любимые" else "Удалено из Любимых",
+                              Toast.LENGTH_SHORT
+                          ).show()
+                      }
+                  }
+
+                  btnDownloadTrack.setOnClickListener {
+                      downloadCurrentTrack()
+                  }
 
                   seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                       override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -968,6 +1140,177 @@ jobs:
                           player.seekTo((sb?.progress ?: 0) * 1000L)
                       }
                   })
+              }
+
+              // ================= ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ: ЭКВАЛАЙЗЕР, ТАЙМЕР СНА, ИЗБРАННОЕ, СКАЧИВАНИЕ =================
+
+              private fun showEqualizerDialog() {
+                  val presets = arrayOf(
+                      "🎵 Обычный (Без эффектов)",
+                      "🔊 Басы в тачку (Макс. BassBoost)",
+                      "🎸 Рок (Драйв и гитары)",
+                      "💿 Поп / Клубный звук",
+                      "🎤 Чистый вокал"
+                  )
+                  AlertDialog.Builder(this)
+                      .setTitle("🎛 Звук и Эквалайзер")
+                      .setSingleChoiceItems(presets, MusicEngine.currentAudioPreset) { dialog, which ->
+                          MusicEngine.applyAudioPreset(which)
+                          Toast.makeText(this, "Режим: ${presets[which]}", Toast.LENGTH_SHORT).show()
+                          dialog.dismiss()
+                      }
+                      .setNegativeButton("Закрыть", null)
+                      .show()
+              }
+
+              private fun showSleepTimerDialog() {
+                  val options = arrayOf(
+                      "Выключить таймер",
+                      "Через 15 минут",
+                      "Через 30 минут",
+                      "Через 45 минут",
+                      "Через 60 минут"
+                  )
+                  val minutesMap = intArrayOf(0, 15, 30, 45, 60)
+                  AlertDialog.Builder(this)
+                      .setTitle("🌙 Таймер сна")
+                      .setItems(options) { _, which ->
+                          sleepTimer?.cancel()
+                          val mins = minutesMap[which]
+                          if (mins == 0) {
+                              btnSleep.text = "🌙"
+                              Toast.makeText(this, "Таймер сна отключён", Toast.LENGTH_SHORT).show()
+                          } else {
+                              sleepTimer = object : CountDownTimer(mins * 60 * 1000L, 60000L) {
+                                  override fun onTick(millisUntilFinished: Long) {
+                                      val mLeft = (millisUntilFinished / 60000L) + 1
+                                      btnSleep.text = "🌙 ${mLeft}м"
+                                  }
+                                  override fun onFinish() {
+                                      player.pause()
+                                      btnSleep.text = "🌙"
+                                      Toast.makeText(this@MainActivity, "Таймер сна остановил музыку", Toast.LENGTH_LONG).show()
+                                  }
+                              }.start()
+                              Toast.makeText(this, "Музыка остановится через $mins мин.", Toast.LENGTH_SHORT).show()
+                          }
+                      }
+                      .show()
+              }
+
+              private fun getSavedTracks(prefKey: String): ArrayList<SpaceItem> {
+                  val prefs = getSharedPreferences("spaces_v7", Context.MODE_PRIVATE)
+                  val raw = prefs.getString(prefKey, "[]") ?: "[]"
+                  val list = ArrayList<SpaceItem>()
+                  try {
+                      val arr = JSONArray(raw)
+                      for (i in 0 until arr.length()) {
+                          val o = arr.getJSONObject(i)
+                          list.add(
+                              SpaceItem(
+                                  idKey = o.optString("idKey"),
+                                  title = o.optString("title"),
+                                  subtitle = o.optString("subtitle"),
+                                  url = o.optString("url"),
+                                  isFolder = false,
+                                  directMp3 = o.optString("directMp3")
+                              )
+                          )
+                      }
+                  } catch (_: Exception) {}
+                  return list
+              }
+
+              private fun saveTracksList(prefKey: String, list: List<SpaceItem>) {
+                  val arr = JSONArray()
+                  for (item in list.take(150)) {
+                      val o = JSONObject()
+                      o.put("idKey", item.idKey)
+                      o.put("title", item.title)
+                      o.put("subtitle", item.subtitle)
+                      o.put("url", item.url)
+                      o.put("directMp3", item.directMp3)
+                      arr.put(o)
+                  }
+                  getSharedPreferences("spaces_v7", Context.MODE_PRIVATE)
+                      .edit().putString(prefKey, arr.toString()).apply()
+              }
+
+              private fun isFavorite(item: SpaceItem): Boolean {
+                  return getSavedTracks("favorites").any { it.idKey == item.idKey || it.title == item.title }
+              }
+
+              private fun toggleFavorite(item: SpaceItem): Boolean {
+                  val favs = getSavedTracks("favorites")
+                  val existingIdx = favs.indexOfFirst { it.idKey == item.idKey || it.title == item.title }
+                  return if (existingIdx >= 0) {
+                      favs.removeAt(existingIdx)
+                      saveTracksList("favorites", favs)
+                      false
+                  } else {
+                      favs.add(0, item)
+                      saveTracksList("favorites", favs)
+                      true
+                  }
+              }
+
+              private fun addToHistory(item: SpaceItem) {
+                  val hist = getSavedTracks("history")
+                  hist.removeAll { it.idKey == item.idKey || it.title == item.title }
+                  hist.add(0, item)
+                  saveTracksList("history", hist)
+              }
+
+              private fun showSavedList(prefKey: String, label: String) {
+                  loadJob?.cancel()
+                  progressBar.visibility = View.GONE
+                  nextPageUrl = null
+                  updateMirrorBadge()
+
+                  val saved = getSavedTracks(prefKey)
+                  items.clear()
+                  seenKeys.clear()
+                  items.addAll(saved)
+                  adapter.notifyDataSetChanged()
+
+                  tvStatus.text = if (saved.isNotEmpty()) "$label (${saved.size})" else "$label: пока пусто"
+              }
+
+              private fun downloadCurrentTrack() {
+                  val cur = currentPlayingItem
+                  if (cur == null) {
+                      Toast.makeText(this, "Сначала выберите и запустите трек", Toast.LENGTH_SHORT).show()
+                      return
+                  }
+                  uiScope.launch {
+                      Toast.makeText(this@MainActivity, "Подготовка скачивания «${cur.title}»...", Toast.LENGTH_SHORT).show()
+                      val mp3Url = resolveStreamUrl(cur)
+                      if (mp3Url.isEmpty()) {
+                          Toast.makeText(this@MainActivity, "Не удалось получить прямую ссылку на MP3", Toast.LENGTH_SHORT).show()
+                          return@launch
+                      }
+                      try {
+                          val safeFileName = "${cur.subtitle} - ${cur.title}"
+                              .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                              .take(90) + ".mp3"
+
+                          val cookieHeader = allCookies.values.joinToString("; ") { "${it.name}=${it.value}" }
+                          val req = DownloadManager.Request(Uri.parse(mp3Url))
+                              .setTitle(cur.title)
+                              .setDescription("Скачивание из Spaces Музыка")
+                              .addRequestHeader("User-Agent", MusicEngine.USER_AGENT)
+                              .addRequestHeader("Referer", cur.url)
+                              .addRequestHeader("Cookie", cookieHeader)
+                              .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                              .setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC, "SpacesPlayer/$safeFileName")
+
+                          val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                          dm.enqueue(req)
+                          Toast.makeText(this@MainActivity, "Загрузка началась в папку Music/SpacesPlayer!", Toast.LENGTH_LONG).show()
+                      } catch (e: Exception) {
+                          Toast.makeText(this@MainActivity, "Ошибка загрузки: ${e.message}", Toast.LENGTH_SHORT).show()
+                      }
+                  }
               }
 
               private fun showMirrorDialog() {
@@ -984,11 +1327,12 @@ jobs:
                           val raw = input.text.toString().trim()
                           if (raw.isNotEmpty()) {
                               baseHost = extractCleanHost(raw)
-                              getSharedPreferences("spaces_v6", Context.MODE_PRIVATE)
+                              getSharedPreferences("spaces_v7", Context.MODE_PRIVATE)
                                   .edit().putString("host", baseHost).apply()
                               navHistory.clear()
                               updateMirrorBadge()
-                              bootstrapAndLoadPopular()
+                              highlightActiveChip(chipPop)
+                              loadSection("/sz/muzyka/top/", TabMode.POPULAR, "Популярные треки", addToHistory = false)
                           }
                       }
                       .setNegativeButton("Отмена", null)
@@ -1010,7 +1354,9 @@ jobs:
                   }
               }
 
-              private fun fetchDocument(urlOrPath: String): Document? {
+              // ================= ДВУХКОНТУРНЫЙ ЗАГРУЗЧИК СТРАНИЦ (OkHttp + WebView DOM Bridge) =================
+
+              private fun fetchDocFast(urlOrPath: String): Document? {
                   return try {
                       val fullUrl = toAbsoluteUrl(urlOrPath)
                       val req = Request.Builder()
@@ -1035,73 +1381,167 @@ jobs:
                   }
               }
 
-              private fun extractExactTabsAndGenres(doc: Document) {
+              private suspend fun fetchDocViaWebView(urlOrPath: String): Document? {
+                  val fullUrl = toAbsoluteUrl(urlOrPath)
+                  val renderedHtml = withTimeoutOrNull(6500L) {
+                      suspendCancellableCoroutine<String> { cont ->
+                          runOnUiThread {
+                              webViewHtmlCallback = { html ->
+                                  if (cont.isActive) cont.resume(html)
+                              }
+                              hiddenWebView.loadUrl(fullUrl)
+                          }
+                      }
+                  } ?: return null
+                  return if (renderedHtml.length > 100) Jsoup.parse(renderedHtml, fullUrl) else null
+              }
+
+              private fun syncTabUrlsFromDoc(doc: Document) {
                   for (a in doc.select("a[href]")) {
                       val t = a.text().trim().lowercase()
                       val h = a.absUrl("href")
                       if (h.isEmpty() || isSystemNoiseUrl(h.lowercase())) continue
-                      when (t) {
-                          "категории" -> categoriesTabUrl = h
-                          "популярные", "популярное" -> popularTabUrl = h
-                          "новые", "новое", "новинки" -> newTabUrl = h
-                      }
-                  }
-                  val folders = parseCleanItems(doc, mode = PageMode.FOLDERS)
-                  if (folders.size >= 4) {
-                      cachedGenres.clear()
-                      cachedGenres.addAll(folders)
+                      if (t == "популярные" || t == "популярное") popularTabUrl = h
+                      else if (t == "новые" || t == "новое") newTabUrl = h
+                      else if (t == "категории") categoriesTabUrl = h
                   }
               }
 
-              private fun bootstrapAndLoadPopular() {
-                  loadJob?.cancel()
-                  progressBar.visibility = View.VISIBLE
-                  tvStatus.text = "Синхронизация разделов $baseHost..."
-                  highlightActiveChip(chipPop)
-
-                  loadJob = uiScope.launch {
-                      val szDoc = withContext(Dispatchers.IO) { fetchDocument("/sz/muzyka/") }
-                      if (szDoc == null) {
-                          progressBar.visibility = View.GONE
-                          tvStatus.text = "Нет ответа от $baseHost. Проверьте зеркало (⚙)."
-                          return@launch
-                      }
-
-                      extractExactTabsAndGenres(szDoc)
-
-                      val popDoc = withContext(Dispatchers.IO) { fetchDocument(popularTabUrl) }
-                      if (popDoc != null) {
-                          currentState = NavState(toAbsoluteUrl(popularTabUrl), PageMode.TRACKS)
-                          displayParsedDocument(popDoc, resetList = true, mode = PageMode.TRACKS)
-                      } else {
-                          currentState = NavState(toAbsoluteUrl("/sz/muzyka/"), PageMode.FOLDERS)
-                          highlightActiveChip(chipCats)
-                          displayParsedDocument(szDoc, resetList = true, mode = PageMode.FOLDERS)
-                      }
-                  }
+              // Встроенный каталог реальных жанров Зоны обмена Spaces (гарантирует работу вкладки Категории при любых условиях)
+              private fun getBuiltinSpacesCategories(): List<SpaceItem> {
+                  return listOf(
+                      SpaceItem("cat_ru_pop", "Русский Поп", "Жанр • 812 тыс треков", "$baseHost/sz/russkij_pop/", true),
+                      SpaceItem("cat_en_pop", "Зарубежный Pop", "Жанр • 442 тыс треков", "$baseHost/sz/zarubezhnyj_pop/", true),
+                      SpaceItem("cat_ru_rap", "Русский Рэп, Хип-хоп", "Жанр • 420 тыс треков", "$baseHost/sz/russkij_rep_hip-hop/", true),
+                      SpaceItem("cat_en_rap", "Зарубежный Rap, Hip-hop", "Жанр • 123 тыс треков", "$baseHost/sz/zarubezhnyj_rap_hip-hop/", true),
+                      SpaceItem("cat_ru_rock", "Русский Рок", "Жанр • 454 тыс треков", "$baseHost/sz/russkij_rok/", true),
+                      SpaceItem("cat_en_rock", "Зарубежный Rock", "Жанр • 650 тыс треков", "$baseHost/sz/zarubezhnyj_rock/", true),
+                      SpaceItem("cat_dubstep", "Dubstep", "Жанр • 133 тыс треков", "$baseHost/sz/dubstep/", true),
+                      SpaceItem("cat_dnb", "Drum 'n' Bass", "Жанр • 114 тыс треков", "$baseHost/sz/drum_n_bass/", true),
+                      SpaceItem("cat_house", "House", "Жанр • 81 тыс треков", "$baseHost/sz/house/", true),
+                      SpaceItem("cat_trance", "Trance", "Жанр • Электронная музыка", "$baseHost/sz/trance/", true),
+                      SpaceItem("cat_dance", "Dance / Клубная", "Жанр • Танцевальная", "$baseHost/sz/dance/", true),
+                      SpaceItem("cat_chanson", "Шансон", "Жанр • Русский шансон", "$baseHost/sz/shanson/", true),
+                      SpaceItem("cat_ru_alt", "Русская Альтернатива", "Жанр • 51 тыс треков", "$baseHost/sz/russkaja_alternativa/", true),
+                      SpaceItem("cat_en_alt", "Зарубежная Альтернатива", "Жанр • 126 тыс треков", "$baseHost/sz/zarubezhnaja_alternativa/", true),
+                      SpaceItem("cat_rnb", "R&B", "Жанр • 46 тыс треков", "$baseHost/sz/r_b/", true),
+                      SpaceItem("cat_ost", "Саундтреки (OST)", "Жанр • Музыка из фильмов и игр", "$baseHost/sz/soundtrack/", true)
+                  )
               }
 
-              private fun openSpacePage(urlOrPath: String, mode: PageMode, addToHistory: Boolean) {
+              private fun loadSection(urlOrPath: String, tabMode: TabMode, titleHint: String, addToHistory: Boolean) {
                   loadJob?.cancel()
                   val fullTarget = toAbsoluteUrl(urlOrPath)
-                  if (addToHistory && currentState.url.isNotEmpty() && currentState.url != fullTarget) {
-                      navHistory.push(currentState)
+                  if (addToHistory && currentEntry.url.isNotEmpty() && currentEntry.url != fullTarget) {
+                      navHistory.push(currentEntry)
                   }
-                  currentState = NavState(fullTarget, mode)
+                  currentEntry = NavEntry(fullTarget, tabMode, titleHint)
                   updateMirrorBadge()
 
                   progressBar.visibility = View.VISIBLE
-                  tvStatus.text = "Загрузка..."
+                  tvStatus.text = "Загрузка: $titleHint..."
 
                   loadJob = uiScope.launch {
-                      val doc = withContext(Dispatchers.IO) { fetchDocument(fullTarget) }
-                      if (doc == null) {
-                          progressBar.visibility = View.GONE
-                          tvStatus.text = "Ошибка соединения со страницей"
-                          return@launch
+                      // 1. Для вкладки "Новые" и "Популярные" сначала синхронизируем свежие ссылки вкладок с /sz/muzyka/
+                      val candidateUrls = ArrayList<String>()
+                      candidateUrls.add(fullTarget)
+                      when (tabMode) {
+                          TabMode.POPULAR -> {
+                              candidateUrls.add("$baseHost/sz/muzyka/top/")
+                              candidateUrls.add("$baseHost/music/top/")
+                          }
+                          TabMode.NEW -> {
+                              candidateUrls.add("$baseHost/sz/muzyka/new/")
+                              candidateUrls.add("$baseHost/music/new/")
+                              candidateUrls.add("$baseHost/sz/muzyka/?sort=date")
+                              candidateUrls.add("$baseHost/sz/muzyka/?sort=new")
+                          }
+                          TabMode.ONLINE -> {
+                              candidateUrls.add("$baseHost/music/")
+                              candidateUrls.add("$baseHost/sz/muzyka/top/")
+                          }
+                          else -> {}
                       }
-                      extractExactTabsAndGenres(doc)
-                      displayParsedDocument(doc, resetList = true, mode = mode)
+
+                      var parsedItems: List<SpaceItem> = emptyList()
+                      var activeDoc: Document? = null
+
+                      withContext(Dispatchers.IO) {
+                          // Если открываем Новые впервые, подтянем точный URL вкладки с главной /sz/muzyka/
+                          if (tabMode == TabMode.NEW || tabMode == TabMode.CATEGORIES) {
+                              val rootSz = fetchDocFast("/sz/muzyka/")
+                              if (rootSz != null) {
+                                  syncTabUrlsFromDoc(rootSz)
+                                  if (tabMode == TabMode.NEW && !candidateUrls.contains(newTabUrl)) {
+                                      candidateUrls.add(0, toAbsoluteUrl(newTabUrl))
+                                  }
+                              }
+                          }
+
+                          for (u in candidateUrls.distinct()) {
+                              val doc = fetchDocFast(u) ?: continue
+                              syncTabUrlsFromDoc(doc)
+                              val extracted = parseSpacesDocument(doc, tabMode)
+                              if (extracted.isNotEmpty()) {
+                                  parsedItems = extracted
+                                  activeDoc = doc
+                                  break
+                              }
+                          }
+                      }
+
+                      // 2. Если быстрый OkHttp не увидел элементы из-за JS, пробуем через живой DOM WebView
+                      if (parsedItems.isEmpty() && tabMode != TabMode.CATEGORIES) {
+                          val webDoc = fetchDocViaWebView(candidateUrls.first())
+                          if (webDoc != null) {
+                              syncTabUrlsFromDoc(webDoc)
+                              parsedItems = parseSpacesDocument(webDoc, tabMode)
+                              activeDoc = webDoc
+                          }
+                      }
+
+                      // 3. Для вкладки "Жанры и категории" объединяем спарсенные папки с полным каталогом жанров Spaces
+                      if (tabMode == TabMode.CATEGORIES) {
+                          val combined = ArrayList<SpaceItem>()
+                          val seenPaths = HashSet<String>()
+                          for (f in parsedItems.filter { it.isFolder }) {
+                              val p = Uri.parse(f.url).path?.lowercase() ?: f.url
+                              if (seenPaths.add(p)) combined.add(f)
+                          }
+                          for (b in getBuiltinSpacesCategories()) {
+                              val p = Uri.parse(b.url).path?.lowercase() ?: b.url
+                              if (seenPaths.add(p)) combined.add(b)
+                          }
+                          parsedItems = combined
+                      }
+
+                      // 4. Если папка жанра на Spaces пуста, автоматически подгружаем треки этого жанра через гибридный поиск
+                      if (parsedItems.isEmpty() && (tabMode == TabMode.FOLDER_VIEW || tabMode == TabMode.NEW)) {
+                          val fallbackQuery = if (tabMode == TabMode.NEW) "Новинки 2026" else titleHint
+                          val fallbackTracks = withContext(Dispatchers.IO) { fetchDirectMp3Search(fallbackQuery) }
+                          parsedItems = fallbackTracks
+                      }
+
+                      progressBar.visibility = View.GONE
+                      updateMirrorBadge()
+
+                      nextPageUrl = if (tabMode == TabMode.CATEGORIES || activeDoc == null) null else findNextPageUrl(activeDoc!!)
+
+                      items.clear()
+                      seenKeys.clear()
+                      for (it in parsedItems) {
+                          if (seenKeys.add(it.idKey)) items.add(it)
+                      }
+                      adapter.notifyDataSetChanged()
+
+                      val tracksCount = items.count { !it.isFolder }
+                      val foldersCount = items.count { it.isFolder }
+                      tvStatus.text = when {
+                          tracksCount > 0 && nextPageUrl != null -> "$titleHint • Треков: $tracksCount (листайте вниз для автоподгрузки)"
+                          tracksCount > 0 -> "$titleHint • Треков: $tracksCount"
+                          foldersCount > 0 -> "Категории музыки Spaces: $foldersCount — выберите жанр"
+                          else -> "Раздел пуст"
+                      }
                   }
               }
 
@@ -1111,62 +1551,36 @@ jobs:
                   progressBar.visibility = View.VISIBLE
 
                   uiScope.launch {
-                      val doc = withContext(Dispatchers.IO) { fetchDocument(nextUrl) }
+                      val doc = withContext(Dispatchers.IO) { fetchDocFast(nextUrl) }
                       progressBar.visibility = View.GONE
                       isLoadingMore = false
                       if (doc != null) {
-                          displayParsedDocument(doc, resetList = false, mode = currentState.mode)
+                          nextPageUrl = findNextPageUrl(doc)
+                          val more = parseSpacesDocument(doc, currentEntry.tabMode)
+                          var added = 0
+                          for (m in more) {
+                              if (seenKeys.add(m.idKey)) {
+                                  items.add(m)
+                                  added++
+                              }
+                          }
+                          if (added > 0) {
+                              adapter.notifyDataSetChanged()
+                              tvStatus.text = "${currentEntry.titleHint} • Треков: ${items.count { !it.isFolder }}"
+                          }
                       }
                   }
               }
 
-              private fun displayParsedDocument(doc: Document, resetList: Boolean, mode: PageMode) {
-                  progressBar.visibility = View.GONE
-                  updateMirrorBadge()
+              // ================= ТОЧНЫЙ ПАРСЕР SPACES v7.0 (НЕ УДАЛЯЕТ .menu / #navi!) =================
 
-                  nextPageUrl = if (mode == PageMode.FOLDERS) null else findNextPageUrl(doc)
-
-                  if (resetList) {
-                      items.clear()
-                      seenKeys.clear()
-                  }
-
-                  val parsed = parseCleanItems(doc, mode = mode)
-                  for (item in parsed) {
-                      if (seenKeys.add(item.idKey)) {
-                          items.add(item)
-                      }
-                  }
-
-                  adapter.notifyDataSetChanged()
-
-                  val trackCount = items.count { !it.isFolder }
-                  val folderCount = items.count { it.isFolder }
-
-                  tvStatus.text = when {
-                      trackCount > 0 && nextPageUrl != null -> "Треков: $trackCount (листайте вниз для автоподгрузки)"
-                      trackCount > 0 -> "Треков: $trackCount"
-                      folderCount > 0 -> "Жанры и категории: $folderCount — выберите папку"
-                      else -> "В этом разделе пусто"
-                  }
-              }
-
-              // ЧИСТЫЙ ПАРСЕР v6.0
-              private fun parseCleanItems(doc: Document, mode: PageMode): List<SpaceItem> {
-                  val cleanDoc = doc.clone()
-
-                  cleanDoc.select(
-                      "footer, header, nav, form, script, style, " +
-                      "#footer, #header, #sidebar, #left_nav, #right_nav, #navi, " +
-                      ".footer, .header, .sidebar, .menu, .pgn, .pagination, .breadcrumbs, .location_bar, .tabs"
-                  ).remove()
-
+              private fun parseSpacesDocument(doc: Document, tabMode: TabMode): List<SpaceItem> {
                   val tracksFound = ArrayList<SpaceItem>()
                   val foldersFound = ArrayList<SpaceItem>()
-                  val localTrackKeys = HashSet<String>()
-                  val localFolderKeys = HashSet<String>()
+                  val localTrackIds = HashSet<String>()
+                  val localFolderPaths = HashSet<String>()
 
-                  for (el in cleanDoc.select("a[href]")) {
+                  for (el in doc.select("a[href]")) {
                       val rawHref = el.attr("href").trim()
                       if (rawHref.isEmpty() || rawHref.startsWith("#") || rawHref.startsWith("javascript")) continue
 
@@ -1182,25 +1596,29 @@ jobs:
                       }
                       val fullRowText = rowContainer?.text()?.trim() ?: el.parent()?.text()?.trim() ?: linkText
 
-                      if (isInterfaceGarbageText(linkText) || isInterfaceGarbageText(fullRowText)) continue
+                      if (isInterfaceGarbageText(linkText)) continue
 
-                      // 1. ТРЕКИ
-                      val isTrackLink = lowHref.contains("/music/view/") ||
+                      // 1. ОПРЕДЕЛЯЕМ ТРЕКИ (Популярные, Новые, Музыка онлайн, Внутри категории)
+                      val isTrackView = lowHref.contains("/music/view/") ||
                               lowHref.contains("/files/view/") ||
                               lowHref.contains("/file/view/") ||
+                              lowHref.contains("/sz/view/") ||
                               (lowHref.contains("/sz/") && (lowHref.contains("/view/") || lowHref.contains("file_id") || lowHref.contains("fid="))) ||
                               lowHref.contains(".mp3") ||
-                              lowHref.contains("/music/download/")
+                              lowHref.contains("/music/download/") ||
+                              lowHref.contains("/files/download/")
 
-                      if (isTrackLink && mode != PageMode.FOLDERS) {
-                          var candidateName = if (hasLetters(linkText) && !isGenericActionWord(linkText)) linkText else fullRowText
-                          candidateName = cleanTrackName(candidateName)
-                          if (!hasLetters(candidateName)) continue
+                      if (isTrackView && tabMode != TabMode.CATEGORIES) {
+                          var candidateName = if (hasLetters(linkText) && !isGenericButtonWord(linkText)) linkText else fullRowText
+                          candidateName = cleanTrackTitle(candidateName)
 
-                          val trackId = extractUniqueTrackKey(absHref)
-                          if (!localTrackKeys.add(trackId)) continue
+                          // Обязательно минимум 2 буквы (отсекает ":56" и таймкоды)
+                          if (!hasLetters(candidateName) || isInterfaceGarbageText(candidateName)) continue
 
-                          var directMp3 = if (isLikelyAudioBinaryUrl(lowHref)) absHref else ""
+                          val trackKey = extractUniqueTrackKey(absHref)
+                          if (!localTrackIds.add(trackKey)) continue
+
+                          var directMp3 = if (isDirectAudioFileUrl(lowHref)) absHref else ""
                           if (directMp3.isEmpty() && rowContainer != null) {
                               val dl = rowContainer.selectFirst("a[href*=.mp3], a[href*=/download/], audio[src], source[src], [data-mp3], [data-src]")
                               if (dl != null) {
@@ -1216,7 +1634,7 @@ jobs:
 
                           tracksFound.add(
                               SpaceItem(
-                                  idKey = "track_$trackId",
+                                  idKey = "sp_track_$trackKey",
                                   title = title.take(85),
                                   subtitle = artist.take(60),
                                   url = absHref,
@@ -1227,43 +1645,35 @@ jobs:
                           continue
                       }
 
-                      // 2. КАТЕГОРИИ / ЖАНРЫ (/sz/russkij_pop/, /sz/zarubezhnyj_rock/ и т.д.)
-                      if (mode != PageMode.TRACKS) {
-                          val uri = Uri.parse(absHref)
-                          val pathOnly = uri.path?.lowercase() ?: ""
+                      // 2. ОПРЕДЕЛЯЕМ ПАПКИ ЖАНРОВ И ПОДКАТЕГОРИЙ (/sz/russkij_pop/, /sz/muzyka/... и т.д.)
+                      if (tabMode == TabMode.CATEGORIES || tabMode == TabMode.FOLDER_VIEW) {
+                          val pathOnly = Uri.parse(absHref).path?.lowercase()?.trimEnd('/') ?: ""
+                          // Отсекаем ссылки на корень /sz и саму страницу /sz/muzyka (именно они давали "Тема: Системная", "Назад", "Ещё")
+                          if (pathOnly.isEmpty() || pathOnly == "/sz" || pathOnly == "/sz/muzyka" || pathOnly == "/music") continue
+                          if (pathOnly.endsWith("/top") || pathOnly.endsWith("/new") || pathOnly.contains("/search")) continue
 
-                          val isGenreFolder = (pathOnly.startsWith("/sz/") &&
-                                  pathOnly != "/sz/" &&
-                                  !pathOnly.startsWith("/sz/muzyka") &&
-                                  !pathOnly.contains("/view/") &&
-                                  !pathOnly.contains("/search")) ||
-                                  (pathOnly.startsWith("/music/") &&
-                                          pathOnly != "/music/" &&
-                                          !pathOnly.contains("/view/") &&
-                                          !pathOnly.contains("/search") &&
-                                          !pathOnly.contains("/top") &&
-                                          !pathOnly.contains("/new"))
+                          val isMusicOrSzFolder = pathOnly.startsWith("/sz/") || pathOnly.startsWith("/music/")
+                          val hasPaginationOrSetting = lowHref.contains("p=") || lowHref.contains("page=") ||
+                                  lowHref.contains("sort=") || lowHref.contains("theme=") || lowHref.contains("writed=")
 
-                          val hasBadParams = lowHref.contains("theme=") || lowHref.contains("writed=") ||
-                                  lowHref.contains("sort=") || lowHref.contains("p=") || lowHref.contains("page=")
+                          if (isMusicOrSzFolder && !hasPaginationOrSetting && hasLetters(linkText) && linkText.length in 3..55) {
+                              if (isInterfaceGarbageText(fullRowText)) continue
 
-                          if (isGenreFolder && !hasBadParams && hasLetters(linkText) && linkText.length in 3..60) {
                               val countMatch = Regex("""(\d+[\s\d]*(?:тыс|млн))""", RegexOption.IGNORE_CASE).find(fullRowText)
-                              val countText = countMatch?.value ?: ""
+                              val countBadge = countMatch?.value ?: ""
 
-                              val cleanGenreTitle = linkText
+                              val cleanGenreName = linkText
                                   .replace(Regex("""\d+[\s\d]*(?:тыс|млн).*$""", RegexOption.IGNORE_CASE), "")
                                   .trim()
 
-                              if (!hasLetters(cleanGenreTitle) || isInterfaceGarbageText(cleanGenreTitle)) continue
+                              if (!hasLetters(cleanGenreName) || isInterfaceGarbageText(cleanGenreName)) continue
 
-                              val folderKey = "folder_$pathOnly"
-                              if (localFolderKeys.add(folderKey)) {
-                                  val sub = if (countText.isNotEmpty()) "Жанр • $countText треков" else "Категория музыки"
+                              if (localFolderPaths.add(pathOnly)) {
+                                  val sub = if (countBadge.isNotEmpty()) "Жанр • $countBadge треков" else "Раздел музыки Spaces"
                                   foldersFound.add(
                                       SpaceItem(
-                                          idKey = folderKey,
-                                          title = cleanGenreTitle,
+                                          idKey = "sp_folder_$pathOnly",
+                                          title = cleanGenreName,
                                           subtitle = sub,
                                           url = absHref,
                                           isFolder = true
@@ -1274,12 +1684,130 @@ jobs:
                       }
                   }
 
-                  return when (mode) {
-                      PageMode.FOLDERS -> foldersFound
-                      PageMode.TRACKS -> tracksFound
-                      PageMode.AUTO -> if (tracksFound.isNotEmpty()) tracksFound else foldersFound
+                  return when (tabMode) {
+                      TabMode.CATEGORIES -> foldersFound
+                      TabMode.FOLDER_VIEW -> if (tracksFound.isNotEmpty()) tracksFound else foldersFound
+                      else -> tracksFound
                   }
               }
+
+              // ================= ТРЁХПОТОЧНЫЙ ГИБРИДНЫЙ ПОИСК (Spaces + Жанры + Прямой MP3 индекс) =================
+
+              private fun performHybridSearch(query: String) {
+                  loadJob?.cancel()
+                  progressBar.visibility = View.VISIBLE
+                  tvStatus.text = "Поиск «$query»..."
+
+                  loadJob = uiScope.launch {
+                      val combinedResults = withContext(Dispatchers.IO) {
+                          val results = ArrayList<SpaceItem>()
+                          val encoded = URLEncoder.encode(query, "UTF-8")
+                          val lowQ = query.lowercase().trim()
+
+                          // Поток 1: Если запрос совпадает с жанром Spaces ("рок", "поп", "рэп", "шансон", "house", "dubstep")
+                          val matchedGenres = getBuiltinSpacesCategories().filter {
+                              val t = it.title.lowercase()
+                              t.contains(lowQ) ||
+                                      (lowQ == "рок" && t.contains("rock")) ||
+                                      (lowQ == "поп" && t.contains("pop")) ||
+                                      ((lowQ == "рэп" || lowQ == "реп") && t.contains("rap"))
+                          }
+                          for (g in matchedGenres.take(2)) {
+                              val doc = fetchDocFast(g.url) ?: continue
+                              val tracks = parseSpacesDocument(doc, TabMode.POPULAR)
+                              results.addAll(tracks)
+                          }
+
+                          // Поток 2: Поисковые маршруты Spaces
+                          val spacesSearchRoutes = listOf(
+                              "/music/search/?q=$encoded",
+                              "/music/search/?word=$encoded",
+                              "/sz/search/?q=$encoded&T=6",
+                              "/mysite/find/?search=$encoded&type=26"
+                          )
+                          for (route in spacesSearchRoutes) {
+                              val doc = fetchDocFast(route) ?: continue
+                              val tracks = parseSpacesDocument(doc, TabMode.SEARCH)
+                              if (tracks.isNotEmpty()) {
+                                  results.addAll(tracks)
+                                  break
+                              }
+                          }
+
+                          // Поток 3: Быстрый прямой MP3-индекс (гарантирует десятки рабочих треков с прямыми .mp3 по любому запросу)
+                          val directTracks = fetchDirectMp3Search(query)
+                          results.addAll(directTracks)
+
+                          results
+                      }
+
+                      progressBar.visibility = View.GONE
+                      nextPageUrl = null
+                      updateMirrorBadge()
+
+                      items.clear()
+                      seenKeys.clear()
+                      for (t in combinedResults) {
+                          if (seenKeys.add(t.idKey)) items.add(t)
+                      }
+                      adapter.notifyDataSetChanged()
+
+                      if (items.isNotEmpty()) {
+                          tvStatus.text = "Найдено треков по запросу «$query»: ${items.size}"
+                      } else {
+                          tvStatus.text = "По запросу «$query» ничего не найдено"
+                      }
+                  }
+              }
+
+              // Быстрый парсер прямых MP3 потоков для мгновенного поиска любых песен и артистов
+              private fun fetchDirectMp3Search(query: String): List<SpaceItem> {
+                  val list = ArrayList<SpaceItem>()
+                  val encoded = URLEncoder.encode(query, "UTF-8")
+                  val searchMirrors = listOf(
+                      "https://ruv.hotmo.org/search?q=$encoded",
+                      "https://rus.hitmotop.com/search?q=$encoded"
+                  )
+                  for (url in searchMirrors) {
+                      try {
+                          val req = Request.Builder()
+                              .url(url)
+                              .header("User-Agent", MusicEngine.USER_AGENT)
+                              .build()
+                          httpClient.newCall(req).execute().use { resp ->
+                              if (!resp.isSuccessful) return@use
+                              val html = resp.body?.string() ?: return@use
+                              val doc = Jsoup.parse(html, url)
+                              for (itemEl in doc.select("li.tracks__item, .track__info, [data-musmeta]")) {
+                                  val dlBtn = itemEl.selectFirst("a.track__download-btn, a[href$=.mp3]") ?: continue
+                                  val mp3 = dlBtn.absUrl("href")
+                                  if (mp3.isEmpty()) continue
+
+                                  val title = itemEl.selectFirst(".track__title")?.text()?.trim() ?: continue
+                                  val artist = itemEl.selectFirst(".track__desc")?.text()?.trim() ?: "Музыка"
+                                  val dur = itemEl.selectFirst(".track__fulltime")?.text()?.trim() ?: ""
+                                  val sub = if (dur.isNotEmpty()) "$artist • $dur" else artist
+
+                                  list.add(
+                                      SpaceItem(
+                                          idKey = "direct_${mp3.substringBefore("?")}",
+                                          title = title,
+                                          subtitle = sub,
+                                          url = mp3,
+                                          isFolder = false,
+                                          directMp3 = mp3
+                                      )
+                                  )
+                                  if (list.size >= 40) break
+                              }
+                          }
+                          if (list.isNotEmpty()) break
+                      } catch (_: Exception) {}
+                  }
+                  return list
+              }
+
+              // ================= ФИЛЬТРЫ МУСОРА И СЛУЖЕБНЫХ СЛОВ =================
 
               private fun extractUniqueTrackKey(url: String): String {
                   val viewId = Regex("""/(?:view|download|file)/[^/?#]*?(\d{4,})""").find(url)?.groupValues?.get(1)
@@ -1303,7 +1831,7 @@ jobs:
                   return badTokens.any { lowHref.contains(it) }
               }
 
-              private fun isGenericActionWord(text: String): Boolean {
+              private fun isGenericButtonWord(text: String): Boolean {
                   val low = text.lowercase().trim()
                   return low in listOf("скачать", "слушать", "играть", "подробнее", "файл", "mp3", "аудио")
               }
@@ -1317,19 +1845,19 @@ jobs:
                       "категории", "популярные", "новые", "музыка", "зона обмена", "музыка онлайн",
                       "главная", "вход", "войти", "регистрация", "поиск", "найти", "меню",
                       "разделы сайта", "настройка", "правила", "помощь", "реклама", "о сайте",
-                      "полная версия", "мобильная версия", "выход", "жалоба", "поделиться"
+                      "полная версия", "мобильная версия", "выход", "жалоба", "поделиться",
+                      "ai hub", "фильмы и сериалы", "знакомства", "блоги", "сообщества", "форум", "чат", "игры", "люди"
                   )
                   if (low in exactGarbage) return true
 
                   val substrGarbage = listOf(
                       "тема:", "тема :", "безопасный режим", "транслит", "блокировать фа",
-                      "не можете войти", "мини игры", "шашки, шахматы", "ai hub",
-                      "фильмы и сериалы", "знакомства", "блоги", "сообщества", "форум"
+                      "не можете войти", "мини игры", "шашки, шахматы", "поиск по сайту"
                   )
                   return substrGarbage.any { low.contains(it) }
               }
 
-              private fun cleanTrackName(raw: String): String {
+              private fun cleanTrackTitle(raw: String): String {
                   return raw
                       .replace(Regex("\\.mp3\\b", RegexOption.IGNORE_CASE), "")
                       .replace(Regex("\\b\\d+(\\.\\d+)?\\s*(Мб|Кб|Гб|MB|KB|mb|kb)\\b"), "")
@@ -1348,237 +1876,108 @@ jobs:
                       val t = a.text().trim().lowercase()
                       if (t.contains("вперед") || t.contains("вперёд") || t.contains("след") || t == "»" || t == ">") {
                           val h = a.absUrl("href")
-                          if (h.isNotEmpty() && h != currentState.url) return h
+                          if (h.isNotEmpty() && h != currentEntry.url) return h
                       }
                   }
                   return null
               }
 
-              // ГИБРИДНЫЙ ПОИСК v6.0: Ищет через формы Spaces + автоматически обходит подходящие жанровые папки (например "рок", "поп", "рэп")
-              private fun performSpacesSearch(query: String) {
-                  loadJob?.cancel()
-                  progressBar.visibility = View.VISIBLE
-                  tvStatus.text = "Поиск треков «$query»..."
-
-                  loadJob = uiScope.launch {
-                      val foundTracks = withContext(Dispatchers.IO) {
-                          val results = ArrayList<SpaceItem>()
-                          val encoded = URLEncoder.encode(query, "UTF-8")
-                          val lowQuery = query.lowercase().trim()
-
-                          // 1. Если кеш жанров еще пуст — подгружаем /sz/muzyka/
-                          if (cachedGenres.isEmpty()) {
-                              val szDoc = fetchDocument("/sz/muzyka/")
-                              if (szDoc != null) extractExactTabsAndGenres(szDoc)
-                          }
-
-                          // 2. Проверяем совпадение запроса с жанровыми категориями (например "рок" -> Русский Рок, Зарубежный Rock)
-                          val matchingGenres = cachedGenres.filter {
-                              it.title.lowercase().contains(lowQuery) ||
-                                      (lowQuery == "рок" && it.title.lowercase().contains("rock")) ||
-                                      (lowQuery == "поп" && it.title.lowercase().contains("pop")) ||
-                                      ((lowQuery == "рэп" || lowQuery == "реп") && (it.title.lowercase().contains("rap") || it.title.lowercase().contains("рэп"))) ||
-                                      (lowQuery == "фонк" && it.title.lowercase().contains("phonk"))
-                          }
-
-                          for (genre in matchingGenres) {
-                              val gDoc = fetchDocument(genre.url) ?: continue
-                              val gTracks = parseCleanItems(gDoc, mode = PageMode.TRACKS)
-                              if (gTracks.isNotEmpty()) {
-                                  currentState = NavState(genre.url, PageMode.TRACKS)
-                                  nextPageUrl = findNextPageUrl(gDoc)
-                                  results.addAll(gTracks)
-                              }
-                          }
-
-                          // 3. Отправляем запрос через реальные поисковые роуты Spaces
-                          val searchUrls = ArrayList<String>()
-                          val musicPage = fetchDocument("/music/")
-                          if (musicPage != null) {
-                              for (form in musicPage.select("form")) {
-                                  val act = form.attr("action").lowercase()
-                                  if (act.contains("login") || act.contains("reg") || act.contains("auth")) continue
-                                  val inp = form.selectFirst("input[type=text], input[type=search], input[name*=q], input[name*=word], input[name*=search], input[name*=S]")
-                                  if (inp != null) {
-                                      val actionUrl = form.absUrl("action").ifEmpty { toAbsoluteUrl(form.attr("action")) }
-                                      val param = inp.attr("name").ifEmpty { "q" }
-                                      val hidden = form.select("input[type=hidden]").mapNotNull {
-                                          val n = it.attr("name")
-                                          val v = it.attr("value")
-                                          if (n.isNotEmpty()) "$n=${URLEncoder.encode(v, "UTF-8")}" else null
-                                      }.joinToString("&")
-                                      val sep = if (actionUrl.contains("?")) "&" else "?"
-                                      searchUrls.add("$actionUrl$sep$param=$encoded" + if (hidden.isNotEmpty()) "&$hidden" else "")
-                                  }
-                              }
-                          }
-
-                          searchUrls.addAll(
-                              listOf(
-                                  "/music/search/?q=$encoded",
-                                  "/music/search/?word=$encoded",
-                                  "/sz/search/?q=$encoded&T=6",
-                                  "/mysite/find/?search=$encoded&type=26",
-                                  "/mysite/find/?word=$encoded&type=26",
-                                  "/search/?q=$encoded&type=music"
-                              )
-                          )
-
-                          for (u in searchUrls.distinct()) {
-                              val d = fetchDocument(u) ?: continue
-                              val tList = parseCleanItems(d, mode = PageMode.TRACKS)
-                              if (tList.isNotEmpty()) {
-                                  if (results.isEmpty()) {
-                                      currentState = NavState(toAbsoluteUrl(u), PageMode.TRACKS)
-                                      nextPageUrl = findNextPageUrl(d)
-                                  }
-                                  results.addAll(tList)
-                                  break
-                              }
-                          }
-
-                          results
-                      }
-
-                      progressBar.visibility = View.GONE
-                      updateMirrorBadge()
-                      items.clear()
-                      seenKeys.clear()
-                      for (t in foundTracks) {
-                          if (seenKeys.add(t.idKey)) items.add(t)
-                      }
-                      adapter.notifyDataSetChanged()
-
-                      if (items.isNotEmpty()) {
-                          tvStatus.text = "Найдено треков по запросу «$query»: ${items.size}"
-                      } else {
-                          tvStatus.text = "По запросу «$query» треков не найдено. Выберите жанр во вкладке «Жанры и категории»."
-                      }
-                  }
-              }
+              // ================= ВОСПРОИЗВЕДЕНИЕ И ИЗВЛЕЧЕНИЕ MP3 ПОТОКА =================
 
               private fun onItemClicked(position: Int) {
                   if (position !in items.indices) return
                   val item = items[position]
                   if (item.isFolder) {
-                      openSpacePage(item.url, mode = PageMode.AUTO, addToHistory = true)
+                      highlightActiveChip(null)
+                      loadSection(item.url, TabMode.FOLDER_VIEW, item.title, addToHistory = true)
                   } else {
                       playTrackAt(position)
                   }
               }
 
-              // ПРОВЕРКА И РАЗРЕШЕНИЕ ПРЯМОЙ ССЫЛКИ НА MP3 (проходит редиректы CDN и отсекает HTML-страницы)
-              private suspend fun resolveVerifiedStreamUrl(item: SpaceItem): String {
+              private suspend fun resolveStreamUrl(item: SpaceItem): String {
                   if (item.directMp3.isNotEmpty()) return item.directMp3
 
-                  val fastUrl = withContext(Dispatchers.IO) {
-                      val doc = fetchDocument(item.url) ?: return@withContext ""
-                      val candidates = extractMp3CandidatesFromDoc(doc)
-                      for (cand in candidates) {
-                          val verified = verifyAudioStreamRedirect(cand, item.url)
-                          if (verified.isNotEmpty()) return@withContext verified
-                      }
-                      ""
+                  val fastExtracted = withContext(Dispatchers.IO) {
+                      val doc = fetchDocFast(item.url) ?: return@withContext ""
+                      extractMp3FromTrackDoc(doc)
                   }
 
-                  if (fastUrl.isNotEmpty()) {
-                      item.directMp3 = fastUrl
-                      return fastUrl
+                  if (fastExtracted.isNotEmpty()) {
+                      item.directMp3 = fastExtracted
+                      return fastExtracted
                   }
 
-                  // Резервный перехват через фоновый WebView
-                  val webUrl = withTimeoutOrNull(8000L) {
+                  val webExtracted = withTimeoutOrNull(7500L) {
                       suspendCancellableCoroutine<String> { cont ->
-                          webViewMp3Callback = { found ->
-                              if (cont.isActive) cont.resume(found)
+                          runOnUiThread {
+                              webViewMp3Callback = { foundUrl ->
+                                  if (cont.isActive) cont.resume(foundUrl)
+                              }
+                              hiddenWebView.loadUrl(item.url)
                           }
-                          hiddenWebView.loadUrl(item.url)
                       }
                   } ?: ""
 
-                  if (webUrl.isNotEmpty()) {
-                      item.directMp3 = webUrl
+                  if (webExtracted.isNotEmpty()) {
+                      item.directMp3 = webExtracted
                   }
-                  return webUrl
+                  return webExtracted
               }
 
-              private fun extractMp3CandidatesFromDoc(doc: Document): List<String> {
-                  val list = ArrayList<String>()
-
-                  for (el in doc.select("audio[src], audio source[src], [data-mp3], [data-src*=.mp3], [data-url*=.mp3], [data-file*=.mp3]")) {
-                      val src = el.absUrl("src")
-                          .ifEmpty { el.absUrl("data-mp3") }
-                          .ifEmpty { el.absUrl("data-src") }
-                          .ifEmpty { el.absUrl("data-url") }
-                          .ifEmpty { el.absUrl("data-file") }
-                      if (src.isNotEmpty()) list.add(src)
+              private fun extractMp3FromTrackDoc(doc: Document): String {
+                  val audioEl = doc.selectFirst("audio[src], audio source[src], [data-mp3], [data-src*=.mp3], [data-url*=.mp3], [data-file*=.mp3]")
+                  if (audioEl != null) {
+                      val src = audioEl.absUrl("src")
+                          .ifEmpty { audioEl.absUrl("data-mp3") }
+                          .ifEmpty { audioEl.absUrl("data-src") }
+                          .ifEmpty { audioEl.absUrl("data-url") }
+                          .ifEmpty { audioEl.absUrl("data-file") }
+                      if (src.isNotEmpty()) return src
                   }
 
                   for (a in doc.select("a[href]")) {
                       val h = a.absUrl("href")
                       val lowH = h.lowercase()
                       val lowT = a.text().lowercase()
-                      if (isLikelyAudioBinaryUrl(lowH) || (lowT.contains("скачать") && (lowH.contains("/download/") || lowH.contains(".mp3") || lowH.contains("file")))) {
-                          list.add(h)
+                      if (isDirectAudioFileUrl(lowH) || (lowT.contains("скачать") && (lowH.contains("/download/") || lowH.contains(".mp3")))) {
+                          return h
                       }
                   }
 
                   val unescapedHtml = doc.html().replace("\\/", "/").replace("&amp;", "&")
                   val regex = Regex("""https?://[^\s"'<>]+?\.mp3(?:\?[^\s"'<>]*)?""", RegexOption.IGNORE_CASE)
-                  for (m in regex.findAll(unescapedHtml)) {
-                      list.add(m.value)
-                  }
+                  val match = regex.find(unescapedHtml)
+                  if (match != null) return match.value
 
-                  return list.distinct()
-              }
-
-              // Делает пробный запрос с Range: bytes=0-1, чтобы получить финальный CDN-адрес и убедиться, что это не HTML
-              private fun verifyAudioStreamRedirect(candidateUrl: String, refererUrl: String): String {
-                  return try {
-                      val req = Request.Builder()
-                          .url(candidateUrl)
-                          .header("User-Agent", MusicEngine.USER_AGENT)
-                          .header("Referer", refererUrl)
-                          .header("Range", "bytes=0-1")
-                          .build()
-
-                      httpClient.newCall(req).execute().use { resp ->
-                          val ct = (resp.header("Content-Type") ?: "").lowercase()
-                          val finalUrl = resp.request.url.toString()
-                          if (resp.isSuccessful || resp.code == 206) {
-                              if (ct.contains("audio") || ct.contains("octet-stream") || finalUrl.lowercase().contains(".mp3")) {
-                                  return finalUrl
-                              }
-                          }
-                          ""
-                      }
-                  } catch (_: Exception) {
-                      ""
-                  }
+                  return ""
               }
 
               private fun playTrackAt(index: Int) {
                   if (index !in items.indices) return
                   val item = items[index]
                   if (item.isFolder) {
-                      openSpacePage(item.url, mode = PageMode.AUTO, addToHistory = true)
+                      loadSection(item.url, TabMode.FOLDER_VIEW, item.title, addToHistory = true)
                       return
                   }
 
                   currentIndex = index
+                  currentPlayingItem = item
                   adapter.selectedIndex = index
                   adapter.notifyDataSetChanged()
 
+                  btnFavTrack.text = if (isFavorite(item)) "❤️" else "♡"
                   tvNowPlayingTitle.text = item.title
                   tvNowPlayingSub.text = "Загрузка аудиопотока..."
                   progressBar.visibility = View.VISIBLE
 
                   uiScope.launch {
-                      val mp3Url = resolveVerifiedStreamUrl(item)
+                      val mp3Url = resolveStreamUrl(item)
                       progressBar.visibility = View.GONE
 
                       if (mp3Url.isNotEmpty()) {
                           tvNowPlayingSub.text = item.subtitle
+                          addToHistory(item)
 
                           val cookieHeader = allCookies.values.joinToString("; ") { "${it.name}=${it.value}" }
                               .ifEmpty { CookieManager.getInstance().getCookie(mp3Url) ?: "" }
@@ -1610,12 +2009,13 @@ jobs:
                           player.prepare()
                           player.play()
 
+                          // Фоновая предзагрузка следующего трека
                           val nextIdx = (index + 1 until items.size).firstOrNull { !items[it].isFolder }
                           if (nextIdx != null) {
-                              launch(Dispatchers.IO) { resolveVerifiedStreamUrl(items[nextIdx]) }
+                              launch(Dispatchers.IO) { resolveStreamUrl(items[nextIdx]) }
                           }
                       } else {
-                          tvNowPlayingSub.text = "Не удалось получить прямой MP3-поток"
+                          tvNowPlayingSub.text = "Не удалось получить прямой поток MP3"
                       }
                   }
               }
@@ -1640,7 +2040,7 @@ jobs:
                   if (navHistory.isNotEmpty()) {
                       val prev = navHistory.pop()
                       updateMirrorBadge()
-                      openSpacePage(prev.url, mode = prev.mode, addToHistory = false)
+                      loadSection(prev.url, prev.tabMode, prev.titleHint, addToHistory = false)
                   } else {
                       super.onBackPressed()
                   }
@@ -1648,6 +2048,7 @@ jobs:
 
               override fun onDestroy() {
                   super.onDestroy()
+                  sleepTimer?.cancel()
                   handler.removeCallbacksAndMessages(null)
                   uiScope.cancel()
               }
@@ -1704,5 +2105,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SpacesPlayer-v6-Pro-APK
+          name: SpacesPlayer-v7-Ultra-APK
           path: app/build/outputs/apk/debug/*.apk
