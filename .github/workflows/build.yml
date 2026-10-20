@@ -19,7 +19,7 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Spaces Player v10.1
+      - name: Generate Spaces Player v10.2
         run: |
           rm -rf app/src/main
           mkdir -p app/src/main/java/com/example/spacesplayer
@@ -71,7 +71,7 @@ jobs:
                   minSdk = 24
                   targetSdk = 34
                   versionCode = 10
-                  versionName = "10.1"
+                  versionName = "10.2"
               }
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
@@ -442,7 +442,7 @@ jobs:
                               android:id="@+id/tvNowPlayingSub"
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
-                              android:text="Spaces Музыка v10"
+                              android:text="Spaces Музыка v10.2"
                               android:textColor="#8E8E93"
                               android:textSize="11sp"
                               android:singleLine="true"/>
@@ -668,19 +668,17 @@ jobs:
           import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
           import androidx.recyclerview.widget.LinearLayoutManager
           import androidx.recyclerview.widget.RecyclerView
+          import kotlinx.coroutines.CompletableDeferred
           import kotlinx.coroutines.CoroutineScope
           import kotlinx.coroutines.Dispatchers
           import kotlinx.coroutines.Job
           import kotlinx.coroutines.SupervisorJob
           import kotlinx.coroutines.cancel
           import kotlinx.coroutines.launch
-          import kotlinx.coroutines.resume
-          import kotlinx.coroutines.suspendCancellableCoroutine
           import kotlinx.coroutines.withContext
           import kotlinx.coroutines.withTimeoutOrNull
           import okhttp3.Cookie
           import okhttp3.CookieJar
-          import okhttp3.FormBody
           import okhttp3.HttpUrl
           import okhttp3.OkHttpClient
           import okhttp3.Request
@@ -771,7 +769,6 @@ jobs:
 
               private var baseHost = "https://world84.spcs.bio"
               private var webViewMp3Callback: ((String) -> Unit)? = null
-              private var webViewHtmlCallback: ((String) -> Unit)? = null
 
               private val allCookies = ConcurrentHashMap<String, Cookie>()
               private val httpClient = OkHttpClient.Builder()
@@ -896,20 +893,6 @@ jobs:
 
                       override fun onPageFinished(view: WebView?, url: String?) {
                           super.onPageFinished(view, url)
-                          if (webViewHtmlCallback != null) {
-                              view?.evaluateJavascript("(function(){ return document.documentElement.outerHTML; })();") { rawJsonHtml ->
-                                  val cb = webViewHtmlCallback
-                                  if (cb != null && !rawJsonHtml.isNullOrEmpty() && rawJsonHtml != "null") {
-                                      webViewHtmlCallback = null
-                                      val decoded = try {
-                                          JSONArray("[$rawJsonHtml]").getString(0)
-                                      } catch (_: Exception) {
-                                          rawJsonHtml
-                                      }
-                                      cb.invoke(decoded)
-                                  }
-                              }
-                          }
                           if (webViewMp3Callback != null) {
                               view?.evaluateJavascript(
                                   """
@@ -1493,12 +1476,14 @@ jobs:
                   if (fast.isNotEmpty()) { item.directMp3 = fast; return fast }
 
                   val web = withTimeoutOrNull(7000L) {
-                      suspendCancellableCoroutine<String> { cont ->
-                          runOnUiThread {
-                              webViewMp3Callback = { found -> if (cont.isActive) cont.resume(found) }
-                              hiddenWebView.loadUrl(item.url)
+                      val deferred = CompletableDeferred<String>()
+                      runOnUiThread {
+                          webViewMp3Callback = { found ->
+                              if (!deferred.isCompleted) deferred.complete(found)
                           }
+                          hiddenWebView.loadUrl(item.url)
                       }
+                      deferred.await()
                   } ?: ""
                   if (web.isNotEmpty()) item.directMp3 = web
                   return web
@@ -1626,5 +1611,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SpacesPlayer-v10.1-APK
+          name: SpacesPlayer-v10.2-APK
           path: app/build/outputs/apk/debug/*.apk
