@@ -7,7 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -20,7 +19,7 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Spaces Player v8.2 ULTRA
+      - name: Generate Spaces Player v9 FullSearch
         run: |
           rm -rf app/src/main
           mkdir -p app/src/main/java/com/example/spacesplayer
@@ -72,10 +71,10 @@ jobs:
               compileSdk = 34
               defaultConfig {
                   applicationId = "com.example.spacesplayer"
-                  minSdk = 26
+                  minSdk = 24
                   targetSdk = 34
-                  versionCode = 82
-                  versionName = "8.2-SpacesAuth"
+                  versionCode = 9
+                  versionName = "9.0-FullSearch"
               }
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
@@ -93,9 +92,10 @@ jobs:
               implementation("androidx.media3:media3-exoplayer:1.2.1")
               implementation("androidx.media3:media3-session:1.2.1")
               implementation("androidx.media3:media3-ui:1.2.1")
-              implementation("org.jsoup:jsoup:1.17.2")
+              implementation("org.json:json:20231013")
               implementation("com.squareup.okhttp3:okhttp:4.12.0")
-              implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+              implementation("org.jsoup:jsoup:1.17.2")
+              implementation("org.jetbrains.kotlin:kotlinx-coroutines-android:1.7.3")
           }
           EOF
 
@@ -151,10 +151,10 @@ jobs:
                   android:layout_height="46dp"
                   android:background="@drawable/bg_cover"
                   android:gravity="center"
-                  android:text="♫"
+                  android:text="?"
                   android:textColor="#FFCC00"
                   android:textSize="19sp"
-                  android:textStyle="bold" />
+                  android:textStyle="bold"/>
 
               <LinearLayout
                   android:layout_width="0dp"
@@ -173,18 +173,18 @@ jobs:
                       android:textSize="15sp"
                       android:textStyle="bold"
                       android:singleLine="true"
-                      android:ellipsize="end" />
+                      android:ellipsize="end"/>
 
                   <TextView
                       android:id="@+id/tvSubtitle"
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:text="Spaces"
-                      android:textColor="#8E8E93"
+                      android:textColor="#8EEB93"
                       android:textSize="12sp"
                       android:singleLine="true"
                       android:ellipsize="end"
-                      android:layout_marginTop="2dp" />
+                      android:layout_marginTop="2dp"/>
               </LinearLayout>
 
               <TextView
@@ -194,7 +194,7 @@ jobs:
                   android:gravity="center"
                   android:text="▶"
                   android:textColor="#FFCC00"
-                  android:textSize="16sp" />
+                  android:textSize="16sp"/>
           </LinearLayout>
           EOF
 
@@ -207,88 +207,74 @@ jobs:
               android:orientation="vertical"
               android:background="#0A0A0A">
 
-              <!-- Шапка с кнопками входа, эквалайзера и таймера -->
               <LinearLayout
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:orientation="horizontal"
                   android:gravity="center_vertical"
-                  android:paddingHorizontal="12dp"
+                  android:paddingHorizontal="14dp"
                   android:paddingTop="12dp"
                   android:paddingBottom="6dp">
 
                   <TextView
                       android:id="@+id/btnBackNav"
-                      android:layout_width="32dp"
-                      android:layout_height="32dp"
+                      android:layout_width="34dp"
+                      android:layout_height="34dp"
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
                       android:text="←"
                       android:textColor="#FFFFFF"
-                      android:textSize="16sp"
+                      android:textSize="17sp"
                       android:textStyle="bold"
-                      android:layout_marginEnd="6dp"
-                      android:visibility="gone" />
+                      android:layout_marginEnd="8dp"
+                      android:visibility="gone"/>
 
                   <TextView
                       android:layout_width="0dp"
                       android:layout_height="wrap_content"
                       android:layout_weight="1"
-                      android:text="Spaces Музыка"
+                      android:text="Музыка • Spaces"
                       android:textColor="#FFFFFF"
-                      android:textSize="17sp"
+                      android:textSize="18sp"
                       android:textStyle="bold"
-                      android:singleLine="true" />
-
-                  <TextView
-                      android:id="@+id/btnLogin"
-                      android:layout_width="wrap_content"
-                      android:layout_height="32dp"
-                      android:background="@drawable/bg_chip"
-                      android:gravity="center"
-                      android:paddingHorizontal="8dp"
-                      android:text="👤 Войти"
-                      android:textColor="#FFCC00"
-                      android:textSize="11sp"
-                      android:textStyle="bold"
-                      android:layout_marginEnd="4dp" />
+                      android:singleLine="true"/>
 
                   <TextView
                       android:id="@+id/btnEq"
-                      android:layout_width="32dp"
-                      android:layout_height="32dp"
+                      android:layout_width="34dp"
+                      android:layout_height="34dp"
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
-                      android:text="🎛"
-                      android:textSize="13sp"
-                      android:layout_marginEnd="4dp" />
+                      android:text="⚙"
+                      android:textColor="#FFFFFF"
+                      android:textSize="14sp"
+                      android:layout_marginEnd="6dp"/>
 
                   <TextView
                       android:id="@+id/btnSleep"
                       android:layout_width="wrap_content"
-                      android:layout_height="32dp"
+                      android:layout_height="34dp"
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
-                      android:paddingHorizontal="8dp"
-                      android:text="🌙"
+                      android:paddingHorizontal="10dp"
+                      android:text="⏱"
                       android:textColor="#FFFFFF"
-                      android:textSize="11sp"
-                      android:layout_marginEnd="4dp" />
+                      android:textSize="12sp"
+                      android:layout_marginEnd="6dp"/>
 
                   <TextView
                       android:id="@+id/tvMirror"
                       android:layout_width="wrap_content"
-                      android:layout_height="32dp"
+                      android:layout_height="34dp"
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
-                      android:paddingHorizontal="8dp"
-                      android:text="⚙"
+                      android:paddingHorizontal="10dp"
+                      android:text="◉ world84"
                       android:textColor="#FFCC00"
-                      android:textSize="10sp"
-                      android:textStyle="bold" />
+                      android:textSize="11sp"
+                      android:textStyle="bold"/>
               </LinearLayout>
 
-              <!-- Поиск -->
               <LinearLayout
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
@@ -302,13 +288,13 @@ jobs:
                       android:layout_height="44dp"
                       android:layout_weight="1"
                       android:background="@drawable/bg_search"
-                      android:hint="Исполнитель или название..."
+                      android:hint="Поиск треков, альбомов или артистов..."
                       android:textColor="#FFFFFF"
                       android:textColorHint="#787880"
                       android:paddingHorizontal="14dp"
                       android:singleLine="true"
                       android:imeOptions="actionSearch"
-                      android:inputType="text" />
+                      android:inputType="text"/>
 
                   <Button
                       android:id="@+id/btnSearch"
@@ -318,10 +304,9 @@ jobs:
                       android:backgroundTint="#FFCC00"
                       android:text="Найти"
                       android:textColor="#000000"
-                      android:textStyle="bold" />
+                      android:textStyle="bold"/>
               </LinearLayout>
 
-              <!-- Вкладки -->
               <HorizontalScrollView
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
@@ -334,11 +319,12 @@ jobs:
                       android:layout_height="wrap_content"
                       android:orientation="horizontal">
 
-                      <TextView android:id="@+id/chipTop" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip_active" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🔥 Топ-100" android:textColor="#FFCC00" android:textSize="13sp" android:textStyle="bold" />
-                      <TextView android:id="@+id/chipArtists" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🎤 Исполнители" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
-                      <TextView android:id="@+id/chipGenres" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🎼 Жанры" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
-                      <TextView android:id="@+id/chipFav" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="❤️ Любимые" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
-                      <TextView android:id="@+id/chipHist" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:layout_marginHorizontal="4dp" android:text="🕒 История" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
+                      <TextView android:id="@+id/chipOnline" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Онлайн" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/chipPop" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Популярные" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/chipNew" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Артисты" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/chipCats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Жанры" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/chipFav" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Любимые" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/chipHist" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="История" android:textColor="#FFFFFF" android:textSize="12sp"/>
                   </LinearLayout>
               </HorizontalScrollView>
 
@@ -367,7 +353,12 @@ jobs:
                   android:layout_height="0dp"
                   android:layout_weight="1" />
 
-              <!-- Нижний плеер -->
+              <WebView
+                  android:id="@+id/hiddenWebView"
+                  android:layout_width="1dp"
+                  android:layout_height="1dp"
+                  android:visibility="invisible" />
+
               <LinearLayout
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
@@ -424,7 +415,7 @@ jobs:
                           android:text="♡"
                           android:textColor="#FFCC00"
                           android:textSize="18sp"
-                          android:padding="0dp" />
+                          android:padding="0dp"/>
 
                       <Button
                           android:id="@+id/btnDownloadTrack"
@@ -434,7 +425,7 @@ jobs:
                           android:text="⬇"
                           android:textColor="#FFFFFF"
                           android:textSize="16sp"
-                          android:padding="0dp" />
+                          android:padding="0dp"/>
 
                       <LinearLayout
                           android:layout_width="0dp"
@@ -451,16 +442,16 @@ jobs:
                               android:textColor="#FFFFFF"
                               android:textSize="14sp"
                               android:textStyle="bold"
-                              android:singleLine="true" />
+                              android:singleLine="true"/>
 
                           <TextView
                               android:id="@+id/tvNowPlayingSub"
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
-                              android:text="Spaces Музыка • v8.2"
+                              android:text="Spaces Музыка v9"
                               android:textColor="#8E8E93"
                               android:textSize="11sp"
-                              android:singleLine="true" />
+                              android:singleLine="true"/>
                       </LinearLayout>
 
                       <Button
@@ -471,7 +462,7 @@ jobs:
                           android:text="⏮"
                           android:textColor="#FFFFFF"
                           android:textSize="15sp"
-                          android:padding="0dp" />
+                          android:padding="0dp"/>
 
                       <Button
                           android:id="@+id/btnPlayPause"
@@ -483,7 +474,7 @@ jobs:
                           android:textColor="#000000"
                           android:textStyle="bold"
                           android:textSize="17sp"
-                          android:padding="0dp" />
+                          android:padding="0dp"/>
 
                       <Button
                           android:id="@+id/btnNext"
@@ -493,7 +484,7 @@ jobs:
                           android:text="⏭"
                           android:textColor="#FFFFFF"
                           android:textSize="15sp"
-                          android:padding="0dp" />
+                          android:padding="0dp"/>
                   </LinearLayout>
               </LinearLayout>
           </LinearLayout>
@@ -506,9 +497,6 @@ jobs:
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
               <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
-
               <application
                   android:allowBackup="true"
                   android:icon="@android:drawable/ic_media_play"
@@ -516,7 +504,6 @@ jobs:
                   android:supportsRtl="true"
                   android:theme="@style/Theme.Material3.Dark.NoActionBar"
                   android:usesCleartextTraffic="true">
-
                   <activity
                       android:name=".MainActivity"
                       android:exported="true"
@@ -526,12 +513,6 @@ jobs:
                           <category android:name="android.intent.category.LAUNCHER" />
                       </intent-filter>
                   </activity>
-
-                  <activity
-                      android:name=".LoginActivity"
-                      android:exported="false"
-                      android:theme="@style/Theme.Material3.Dark.NoActionBar" />
-
                   <service
                       android:name=".PlaybackService"
                       android:foregroundServiceType="mediaPlayback"
@@ -552,17 +533,17 @@ jobs:
           import android.content.Intent
           import android.media.audiofx.BassBoost
           import android.media.audiofx.Equalizer
-          import androidx.media3.common.AudioAttributes
-          import androidx.media3.common.C
-          import androidx.media3.common.Player
-          import androidx.media3.datasource.DefaultHttpDataSource
-          import androidx.media3.exoplayer.ExoPlayer
-          import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-          import androidx.media3.session.MediaSession
-          import androidx.media3.session.MediaSessionService
+          import android.media3.common.AudioAttributes
+          import android.media3.common.C
+          import android.media3.common.Player
+          import android.media3.datasource.DefaultHttpDataSource
+          import android.media3.exoplayer.ExoPlayer
+          import android.media3.exoplayer.source.DefaultMediaSourceFactory
+          import android.media3.session.MediaSession
+          import android.media3.session.MediaSessionService
 
           object MusicEngine {
-              const val USER_AGENT = "Mozilla/5.0 (Linux; Android 14; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
+              const val USER_AGENT = "Mozilla/5.0 (Linux; Android 14; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome"
               var player: ExoPlayer? = null
               var mediaSession: MediaSession? = null
               private var bassBoost: BassBoost? = null
@@ -575,24 +556,20 @@ jobs:
                       val dsFactory = DefaultHttpDataSource.Factory()
                           .setUserAgent(USER_AGENT)
                           .setAllowCrossProtocolRedirects(true)
-
                       val audioAttrs = AudioAttributes.Builder()
                           .setUsage(C.USAGE_MEDIA)
                           .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                           .build()
-
                       val exo = ExoPlayer.Builder(appCtx)
                           .setMediaSourceFactory(DefaultMediaSourceFactory(dsFactory))
                           .setAudioAttributes(audioAttrs, true)
                           .setHandleAudioBecomingNoisy(true)
                           .build()
-
                       exo.addListener(object : Player.Listener {
                           override fun onAudioSessionIdChanged(audioSessionId: Int) {
                               applyAudioPreset(currentAudioPreset)
                           }
                       })
-
                       player = exo
                       mediaSession = MediaSession.Builder(appCtx, exo).build()
                   }
@@ -602,16 +579,16 @@ jobs:
                   currentAudioPreset = presetIndex
                   val sessionId = player?.audioSessionId ?: return
                   if (sessionId == C.AUDIO_SESSION_ID_UNSET || sessionId <= 0) return
-
                   try {
                       bassBoost?.release()
                       equalizer?.release()
-
                       val bb = BassBoost(0, sessionId)
                       val eq = Equalizer(0, sessionId)
-
                       when (presetIndex) {
-                          0 -> { bb.enabled = false; eq.enabled = false }
+                          0 -> {
+                              bb.enabled = false
+                              eq.enabled = false
+                          }
                           1 -> {
                               bb.enabled = true
                               if (bb.strengthSupported) bb.setStrength(1000.toShort())
@@ -622,7 +599,9 @@ jobs:
                               bb.enabled = true
                               if (bb.strengthSupported) bb.setStrength(500.toShort())
                               eq.enabled = true
-                              val p = (0 until eq.numberOfPresets).firstOrNull { eq.getPresetName(it.toShort()).lowercase().contains("rock") } ?: 0
+                              val p = (0 until eq.numberOfPresets).firstOrNull {
+                                  eq.getPresetName(it.toShort()).lowercase().contains("rock")
+                              } ?: 0
                               if (eq.numberOfPresets > 0) eq.usePreset(p.toShort())
                           }
                           3 -> {
@@ -647,7 +626,8 @@ jobs:
                       }
                       bassBoost = bb
                       equalizer = eq
-                  } catch (_: Exception) {}
+                  } catch (_: Exception) {
+                  }
               }
           }
 
@@ -656,107 +636,29 @@ jobs:
                   super.onCreate()
                   MusicEngine.ensureInitialized(this)
               }
-
               override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
                   MusicEngine.ensureInitialized(this)
                   return MusicEngine.mediaSession
               }
-
               override fun onTaskRemoved(rootIntent: Intent?) {
                   val p = MusicEngine.player
-                  if (p == null || !p.playWhenReady) stopSelf()
+                  if (p == null || !p.playWhenReady) {
+                      stopSelf()
+                  }
               }
           }
           EOF
 
-          # 10. LoginActivity.kt (Встроенный WebView для авторизации и сохранения sid)
-          cat << 'EOF' > app/src/main/java/com/example/spacesplayer/LoginActivity.kt
-          package com.example.spacesplayer
-
-          import android.annotation.SuppressLint
-          import android.app.Activity
-          import android.content.Intent
-          import android.os.Bundle
-          import android.webkit.CookieManager
-          import android.webkit.WebView
-          import android.webkit.WebViewClient
-          import android.widget.LinearLayout
-          import android.widget.TextView
-
-          class LoginActivity : AppCompatActivity() {
-              @SuppressLint("SetJavaScriptEnabled")
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-                  val layout = LinearLayout(this).apply {
-                      orientation = LinearLayout.VERTICAL
-                      setBackgroundColor(0xFF0A0A0A.toInt())
-                  }
-
-                  val topBar = LinearLayout(this).apply {
-                      orientation = LinearLayout.HORIZONTAL
-                      setPadding(30, 20, 30, 20)
-                      setBackgroundColor(0xFF18181A.toInt())
-                  }
-
-                  val title = TextView(this).apply {
-                      text = "Авторизация в Spaces"
-                      setTextColor(0xFFFFFFFF.toInt())
-                      textSize = 16f
-                      layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                  }
-
-                  val closeBtn = TextView(this).apply {
-                      text = "✕ Закрыть"
-                      setTextColor(0xFFFFCC00.toInt())
-                      textSize = 14f
-                      setOnClickListener { finish() }
-                  }
-
-                  topBar.addView(title)
-                  topBar.addView(closeBtn)
-                  layout.addView(topBar)
-
-                  val webView = WebView(this).apply {
-                      layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
-                      settings.javaScriptEnabled = true
-                      settings.domStorageEnabled = true
-                      webViewClient = object : WebViewClient() {
-                          override fun onPageFinished(view: WebView?, url: String?) {
-                              super.onPageFinished(view, url)
-                              val cookies = CookieManager.getInstance().getCookie(url ?: "")
-                              if (cookies != null && cookies.contains("sid=")) {
-                                  val prefs = getSharedPreferences("spaces_v8", MODE_PRIVATE)
-                                  prefs.edit().putString("cookies", cookies).apply()
-                                  setResult(Activity.RESULT_OK)
-                                  finish()
-                              }
-                          }
-                      }
-                  }
-
-                  layout.addView(webView)
-                  setContentView(layout)
-
-                  val host = intent.getStringExtra("host") ?: "https://world84.spcs.bio"
-                  webView.loadUrl("$host/login/")
-              }
-          }
-          EOF
-
-          # 11. MainActivity.kt (v8.2 — Гибридный поиск, Исполнители, Альбомы, Авторизация)
+          # 10. MainActivity.kt (v9.0 FullSearch Engine)
           cat << 'EOF' > app/src/main/java/com/example/spacesplayer/MainActivity.kt
           package com.example.spacesplayer
 
-          import android.Manifest
-          import android.app.Activity
+          import android.annotation.SuppressLint
           import android.app.AlertDialog
           import android.app.DownloadManager
-          import android.content.ComponentName
           import android.content.Context
           import android.content.Intent
-          import android.content.pm.PackageManager
           import android.net.Uri
-          import android.os.Build
           import android.os.Bundle
           import android.os.CountDownTimer
           import android.os.Environment
@@ -767,51 +669,30 @@ jobs:
           import android.view.ViewGroup
           import android.view.inputmethod.EditorInfo
           import android.view.inputmethod.InputMethodManager
-          import android.widget.Button
-          import android.widget.EditText
-          import android.widget.ProgressBar
-          import android.widget.SeekBar
-          import android.widget.TextView
-          import android.widget.Toast
-          import androidx.activity.result.contract.ActivityResultContracts
+          import android.webkit.*
+          import android.widget.*
           import androidx.appcompat.app.AppCompatActivity
-          import androidx.core.app.ActivityCompat
-          import androidx.core.content.ContextCompat
           import androidx.media3.common.MediaItem
           import androidx.media3.common.MediaMetadata
-          import androidx.media3.common.PlaybackException
           import androidx.media3.common.Player
           import androidx.media3.datasource.DefaultHttpDataSource
           import androidx.media3.exoplayer.ExoPlayer
           import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-          import androidx.media3.session.MediaController
-          import androidx.media3.session.SessionToken
           import androidx.recyclerview.widget.LinearLayoutManager
           import androidx.recyclerview.widget.RecyclerView
-          import com.google.common.util.concurrent.ListenableFuture
-          import kotlinx.coroutines.CoroutineScope
-          import kotlinx.coroutines.Dispatchers
-          import kotlinx.coroutines.Job
-          import kotlinx.coroutines.SupervisorJob
-          import kotlinx.coroutines.cancel
-          import kotlinx.coroutines.launch
-          import kotlinx.coroutines.withContext
-          import okhttp3.Cookie
-          import okhttp3.CookieJar
-          import okhttp3.HttpUrl
-          import okhttp3.OkHttpClient
-          import okhttp3.Request
+          import kotlinx.coroutines.*
+          import okhttp3.*
           import org.json.JSONArray
           import org.json.JSONObject
           import org.jsoup.Jsoup
           import org.jsoup.nodes.Document
-          import org.jsoup.nodes.Element
-          import org.jsoup.nodes.Node
-          import org.jsoup.nodes.TextNode
           import java.net.URLEncoder
           import java.util.Stack
           import java.util.concurrent.ConcurrentHashMap
           import java.util.concurrent.TimeUnit
+          import kotlin.coroutines.resume
+
+          enum class ItemType { TRACK, ALBUM, ARTIST, FOLDER }
 
           data class SpaceItem(
               val idKey: String,
@@ -819,11 +700,12 @@ jobs:
               val subtitle: String,
               val url: String,
               val isFolder: Boolean,
-              var directMp3: String = ""
+              var directMp3: String = "",
+              val type: ItemType = ItemType.TRACK
           )
 
           enum class TabMode {
-              TOP, ARTISTS, GENRES, FAVORITES, HISTORY, SEARCH, FOLDER_VIEW
+              ONLINE, POPULAR, ARTISTS, GENRES, FAVORITES, HISTORY, SEARCH, FOLDER_VIEW
           }
 
           data class NavEntry(
@@ -833,7 +715,6 @@ jobs:
           )
 
           class MainActivity : AppCompatActivity() {
-
               private val player: ExoPlayer
                   get() {
                       MusicEngine.ensureInitialized(this)
@@ -844,7 +725,6 @@ jobs:
               private lateinit var tvStatus: TextView
               private lateinit var tvMirror: TextView
               private lateinit var btnBackNav: TextView
-              private lateinit var btnLogin: TextView
               private lateinit var btnEq: TextView
               private lateinit var btnSleep: TextView
               private lateinit var etSearch: EditText
@@ -857,10 +737,12 @@ jobs:
               private lateinit var seekBar: SeekBar
               private lateinit var tvCurrentTime: TextView
               private lateinit var tvTotalTime: TextView
+              private lateinit var hiddenWebView: WebView
 
-              private lateinit var chipTop: TextView
-              private lateinit var chipArtists: TextView
-              private lateinit var chipGenres: TextView
+              private lateinit var chipOnline: TextView
+              private lateinit var chipPop: TextView
+              private lateinit var chipNew: TextView
+              private lateinit var chipCats: TextView
               private lateinit var chipFav: TextView
               private lateinit var chipHist: TextView
 
@@ -868,68 +750,44 @@ jobs:
               private val seenKeys = HashSet<String>()
               private lateinit var adapter: SpaceAdapter
               private var currentPlayingItem: SpaceItem? = null
+              private var currentIndex = -1
               private var isUserSeeking = false
-              private var retriedOnce = false
-              private var playRequestId = 0
 
               private var nextPageUrl: String? = null
               private var isLoadingMore = false
-              private val loadedPages = HashSet<String>()
               private val navHistory = Stack<NavEntry>()
-              private var currentEntry = NavEntry("/music-online/", TabMode.TOP, "Топ-100")
+              private var currentEntry = NavEntry("/music-online/", TabMode.ONLINE, "Музыка онлайн")
 
-              private val topUrl = "/music-online/"
-              private val artistsUrl = "/music-online/artists/"
-              private val genresUrl = "/music-online/genres/"
+              private var onlineRootUrl = "/music-online/"
+              private var popularTabUrl = "/music-online/"
+              private var artistsTabUrl = "/music-online/artists/"
+              private var genresTabUrl = "/music-online/genres/"
 
               private var sleepTimer: CountDownTimer? = null
               private val uiScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
               private var loadJob: Job? = null
               private val handler = Handler(Looper.getMainLooper())
-              private var controllerFuture: ListenableFuture<MediaController>? = null
 
               private var baseHost = "https://world84.spcs.bio"
-              private var liteChecked = false
+              private var webViewMp3Callback: ((String) -> Unit)? = null
+              private var webViewHtmlCallback: ((String) -> Unit)? = null
 
-              private val viewRe = Regex("""/music/view/(\d+)/?""")
-              private val catalogTrackRe = Regex("""/music-online/track/[^/]+/[^/]+-(\d+)/?""")
-              private val artistRe = Regex("""/music-online/artist/[^/]+/?""")
-              private val albumRe = Regex("""/music-online/album/[^/]+/[^/]+/?""")
-              private val tagRe = Regex("""/music-online/search/by_tag/[^/]+/?""")
-              private val trackSelector = "a[href*='/music/view/'], a[href*='/music-online/track/']"
-
-              private val loginLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                  if (result.resultCode == Activity.RESULT_OK) {
-                      Toast.makeText(this, "Авторизация успешна!", Toast.LENGTH_SHORT).show()
-                      loadSection(currentEntry.url, currentEntry.tabMode, currentEntry.titleHint, addToHistory = false)
-                  }
-              }
-
-              private val cookieStore = ConcurrentHashMap<String, List<Cookie>>()
+              private val allCookies = ConcurrentHashMap<String, Cookie>()
               private val httpClient = OkHttpClient.Builder()
                   .connectTimeout(10, TimeUnit.SECONDS)
-                  .readTimeout(15, TimeUnit.SECONDS)
+                  .readTimeout(10, TimeUnit.SECONDS)
                   .followRedirects(true)
                   .followSslRedirects(true)
                   .cookieJar(object : CookieJar {
                       override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-                          val kept = cookieStore[url.host].orEmpty().filter { old -> cookies.none { it.name == old.name } }
-                          cookieStore[url.host] = kept + cookies
+                          val cm = CookieManager.getInstance()
+                          for (c in cookies) {
+                              allCookies[c.name] = c
+                              cm.setCookie("${url.scheme}://${url.host}", c.toString())
+                          }
                       }
                       override fun loadForRequest(url: HttpUrl): List<Cookie> {
-                          val saved = getSharedPreferences("spaces_v8", MODE_PRIVATE).getString("cookies", "") ?: ""
-                          val list = cookieStore[url.host].orEmpty().toMutableList()
-                          if (saved.isNotEmpty() && list.none { it.name == "sid" }) {
-                              for (cStr in saved.split(";")) {
-                                  val parts = cStr.trim().split("=", limit = 2)
-                                  if (parts.size == 2) {
-                                      val c = Cookie.Builder().domain(url.host).name(parts[0].trim()).value(parts[1].trim()).build()
-                                      list.add(c)
-                                  }
-                              }
-                          }
-                          val now = System.currentTimeMillis()
-                          return list.filter { it.expiresAt > now && it.matches(url) }
+                          return allCookies.values.toList()
                       }
                   })
                   .build()
@@ -939,20 +797,17 @@ jobs:
                   setContentView(R.layout.activity_main)
 
                   MusicEngine.ensureInitialized(this)
-                  requestNotificationPermission()
                   try {
-                      val token = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-                      controllerFuture = MediaController.Builder(this, token).buildAsync()
+                      startService(Intent(this, PlaybackService::class.java))
                   } catch (_: Exception) {}
 
-                  val prefs = getSharedPreferences("spaces_v8", Context.MODE_PRIVATE)
+                  val prefs = getSharedPreferences("spaces_v9", Context.MODE_PRIVATE)
                   baseHost = extractCleanHost(prefs.getString("host", "https://world84.spcs.bio") ?: "https://world84.spcs.bio")
 
                   rvTracks = findViewById(R.id.rvTracks)
                   tvStatus = findViewById(R.id.tvStatus)
                   tvMirror = findViewById(R.id.tvMirror)
                   btnBackNav = findViewById(R.id.btnBackNav)
-                  btnLogin = findViewById(R.id.btnLogin)
                   btnEq = findViewById(R.id.btnEq)
                   btnSleep = findViewById(R.id.btnSleep)
                   etSearch = findViewById(R.id.etSearch)
@@ -965,27 +820,20 @@ jobs:
                   seekBar = findViewById(R.id.seekBar)
                   tvCurrentTime = findViewById(R.id.tvCurrentTime)
                   tvTotalTime = findViewById(R.id.tvTotalTime)
-
-                  chipTop = findViewById(R.id.chipTop)
-                  chipArtists = findViewById(R.id.chipArtists)
-                  chipGenres = findViewById(R.id.chipGenres)
+                  hiddenWebView = findViewById(R.id.hiddenWebView)
+                  chipOnline = findViewById(R.id.chipOnline)
+                  chipPop = findViewById(R.id.chipPop)
+                  chipNew = findViewById(R.id.chipNew)
+                  chipCats = findViewById(R.id.chipCats)
                   chipFav = findViewById(R.id.chipFav)
                   chipHist = findViewById(R.id.chipHist)
 
                   updateMirrorBadge()
+                  setupHiddenWebView()
                   setupPlayerListeners()
                   setupRecyclerView()
                   setupControls()
-
-                  loadSection(topUrl, TabMode.TOP, "Топ-100", addToHistory = false)
-              }
-
-              private fun requestNotificationPermission() {
-                  if (Build.VERSION.SDK_INT >= 33 &&
-                      ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-                  ) {
-                      ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
-                  }
+                  loadSection(onlineRootUrl, TabMode.ONLINE, "Музыка онлайн", addToHistory = false)
               }
 
               private fun extractCleanHost(rawInput: String): String {
@@ -1000,7 +848,7 @@ jobs:
               }
 
               private fun highlightActiveChip(active: TextView?) {
-                  val chips = listOf(chipTop, chipArtists, chipGenres, chipFav, chipHist)
+                  val chips = listOf(chipOnline, chipPop, chipNew, chipCats, chipFav, chipHist)
                   for (c in chips) {
                       if (c == active) {
                           c.setBackgroundResource(R.drawable.bg_chip_active)
@@ -1014,14 +862,111 @@ jobs:
 
               private fun updateMirrorBadge() {
                   val shortHost = baseHost.removePrefix("https://").removePrefix("http://").substringBefore(".")
-                  tvMirror.text = "⚙ $shortHost"
-                  btnBackNav.visibility = if (navHistory.isNotEmpty()) View.VISIBLE else View.GONE
+                  tvMirror.text = "◉ $shortHost"
+                  btnBackNav.visibility = if (navHistory.isEmpty()) View.GONE else View.VISIBLE
+              }
+
+              @SuppressLint("SetJavaScriptEnabled")
+              private fun setupHiddenWebView() {
+                  CookieManager.getInstance().setAcceptCookie(true)
+                  hiddenWebView.settings.apply {
+                      javaScriptEnabled = true
+                      domStorageEnabled = true
+                      userAgentString = MusicEngine.USER_AGENT
+                      mediaPlaybackRequiresUserGesture = false
+                  }
+                  hiddenWebView.webViewClient = object : WebViewClient() {
+                      override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
+                          val url = request?.url?.toString() ?: ""
+                          if (webViewMp3Callback != null && isDirectAudioFileUrl(url)) {
+                              deliverWebViewMp3(url)
+                          }
+                          return super.shouldInterceptRequest(view, request)
+                      }
+
+                      override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                          val url = request?.url?.toString() ?: return false
+                          if (webViewMp3Callback != null && isDirectAudioFileUrl(url)) {
+                              deliverWebViewMp3(url)
+                              return true
+                          }
+                          return false
+                      }
+
+                      override fun onPageFinished(view: WebView?, url: String?) {
+                          super.onPageFinished(view, url)
+                          if (webViewHtmlCallback != null) {
+                              view?.evaluateJavascript("(function(){ return document.documentElement.outerHTML; })();") { rawJsonHtml ->
+                                  val cb = webViewHtmlCallback
+                                  if (cb != null && !rawJsonHtml.isNullOrEmpty() && rawJsonHtml != "null") {
+                                      webViewHtmlCallback = null
+                                      val decoded = try {
+                                          JSONArray("[$rawJsonHtml]").getString(0)
+                                      } catch (_: Exception) {
+                                          rawJsonHtml
+                                      }
+                                      cb.invoke(decoded)
+                                  }
+                              }
+                          }
+                          if (webViewMp3Callback != null) {
+                              view?.evaluateJavascript(
+                                  """
+                                  (function() {
+                                      var a = document.querySelector('audio[src], source[src]');
+                                      if (a && a.src) return a.src;
+                                      var links = document.querySelectorAll('a[href]');
+                                      for (var i = 0; i < links.length; i++) {
+                                          var h = links[i].href || '';
+                                          if (h.indexOf('.mp3') !== -1 || h.indexOf('/download/') !== -1 || h.indexOf('/files/download/') !== -1) return h;
+                                      }
+                                      var playBtn = document.querySelector('[data-mp3], [data-src], [data-url], .play');
+                                      if (playBtn) {
+                                          var d = playBtn.getAttribute('data-mp3') || playBtn.getAttribute('data-src') || playBtn.getAttribute('data-url');
+                                          if (d) return d;
+                                          playBtn.click();
+                                      }
+                                      return '';
+                                  })();
+                                  """.trimIndent()
+                              ) { res ->
+                                  val clean = res?.trim()?.removeSurrounding("\"") ?: ""
+                                  if (clean.startsWith("http") && isDirectAudioFileUrl(clean)) {
+                                      deliverWebViewMp3(clean)
+                                  }
+                              }
+                          }
+                      }
+                  }
+                  hiddenWebView.setDownloadListener { url, _, _, mimetype, _ ->
+                      if (url.isNotEmpty() && (mimetype.contains("audio") || isDirectAudioFileUrl(url))) {
+                          deliverWebViewMp3(url)
+                      }
+                  }
+              }
+
+              private fun isDirectAudioFileUrl(url: String): Boolean {
+                  val l = url.lowercase()
+                  if (l.contains("/registration") || l.contains("/login")) return false
+                  return l.contains(".mp3") || l.contains("/music/download/") || l.contains("/files/download/") ||
+                          l.contains("download_file") || (l.contains("spcs") && l.contains("/d/")) || l.contains("/f/")
+              }
+
+              private fun deliverWebViewMp3(url: String) {
+                  runOnUiThread {
+                      val cb = webViewMp3Callback
+                      if (cb != null) {
+                          webViewMp3Callback = null
+                          hiddenWebView.stopLoading()
+                          cb.invoke(url)
+                      }
+                  }
               }
 
               private fun setupPlayerListeners() {
                   player.addListener(object : Player.Listener {
                       override fun onIsPlayingChanged(isPlaying: Boolean) {
-                          btnPlayPause.text = if (isPlaying) "⏸" else "▶"
+                          btnPlayPause.text = if (isPlaying) "❚❚" else "▶"
                       }
                       override fun onPlaybackStateChanged(state: Int) {
                           if (state == Player.STATE_READY) {
@@ -1031,17 +976,7 @@ jobs:
                               playNextTrack()
                           }
                       }
-                      override fun onPlayerError(error: PlaybackException) {
-                          val cur = currentPlayingItem
-                          if (cur != null && !retriedOnce) {
-                              retriedOnce = true
-                              startPlayback(cur, fresh = true)
-                          } else {
-                              tvNowPlayingSub.text = "Ошибка воспроизведения"
-                          }
-                      }
                   })
-
                   handler.post(object : Runnable {
                       override fun run() {
                           if (player.isPlaying && !isUserSeeking) {
@@ -1072,60 +1007,74 @@ jobs:
                   })
               }
 
-              private fun goBack(): Boolean {
-                  if (navHistory.isEmpty()) return false
-                  val prev = navHistory.pop()
-                  updateMirrorBadge()
-                  when (prev.tabMode) {
-                      TabMode.FAVORITES -> showSavedList("favorites", "❤️ Любимые треки", TabMode.FAVORITES)
-                      TabMode.HISTORY -> showSavedList("history", "🕒 История прослушивания", TabMode.HISTORY)
-                      else -> loadSection(prev.url, prev.tabMode, prev.titleHint, addToHistory = false)
-                  }
-                  return true
-              }
-
-              private fun doSearch() {
-                  val q = etSearch.text.toString().trim()
-                  hideKeyboard()
-                  if (q.isNotEmpty()) {
-                      highlightActiveChip(null)
-                      navHistory.clear()
-                      val enc = URLEncoder.encode(q, "UTF-8")
-                      loadSection("/music-online/search/index/?sq=$enc", TabMode.SEARCH, "Поиск: $q", addToHistory = false)
-                  }
-              }
-
               private fun setupControls() {
                   tvMirror.setOnClickListener { showMirrorDialog() }
-                  btnLogin.setOnClickListener { loginLauncher.launch(Intent(this, LoginActivity::class.java).putExtra("host", baseHost)) }
                   btnEq.setOnClickListener { showEqualizerDialog() }
                   btnSleep.setOnClickListener { showSleepTimerDialog() }
-                  btnBackNav.setOnClickListener { goBack() }
 
-                  findViewById<Button>(R.id.btnSearch).setOnClickListener { doSearch() }
+                  btnBackNav.setOnClickListener {
+                      if (navHistory.isNotEmpty()) {
+                          val prev = navHistory.pop()
+                          updateMirrorBadge()
+                          loadSection(prev.url, prev.tabMode, prev.titleHint, addToHistory = false)
+                      }
+                  }
+
+                  findViewById<Button>(R.id.btnSearch).setOnClickListener {
+                      val q = etSearch.text.toString().trim()
+                      hideKeyboard()
+                      if (q.isNotEmpty()) {
+                          highlightActiveChip(null)
+                          performMusicOnlineSearch(q)
+                      }
+                  }
+
                   etSearch.setOnEditorActionListener { _, actionId, _ ->
-                      if (actionId == EditorInfo.IME_ACTION_SEARCH) { doSearch(); true } else false
+                      if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                          val q = etSearch.text.toString().trim()
+                          hideKeyboard()
+                          if (q.isNotEmpty()) {
+                              highlightActiveChip(null)
+                              performMusicOnlineSearch(q)
+                          }
+                          true
+                      } else false
                   }
 
-                  chipTop.setOnClickListener {
-                      highlightActiveChip(chipTop); navHistory.clear()
-                      loadSection(topUrl, TabMode.TOP, "Топ-100", addToHistory = false)
+                  chipOnline.setOnClickListener {
+                      highlightActiveChip(chipOnline)
+                      navHistory.clear()
+                      loadSection(onlineRootUrl, TabMode.ONLINE, "Музыка онлайн", addToHistory = false)
                   }
-                  chipArtists.setOnClickListener {
-                      highlightActiveChip(chipArtists); navHistory.clear()
-                      loadSection(artistsUrl, TabMode.ARTISTS, "Исполнители", addToHistory = false)
+
+                  chipPop.setOnClickListener {
+                      highlightActiveChip(chipPop)
+                      navHistory.clear()
+                      loadSection(popularTabUrl, TabMode.POPULAR, "Топ-100", addToHistory = false)
                   }
-                  chipGenres.setOnClickListener {
-                      highlightActiveChip(chipGenres); navHistory.clear()
-                      loadSection(genresUrl, TabMode.GENRES, "Жанры", addToHistory = false)
+
+                  chipNew.setOnClickListener {
+                      highlightActiveChip(chipNew)
+                      navHistory.clear()
+                      loadSection(artistsTabUrl, TabMode.ARTISTS, "Исполнители", addToHistory = false)
                   }
+
+                  chipCats.setOnClickListener {
+                      highlightActiveChip(chipCats)
+                      navHistory.clear()
+                      loadSection(genresTabUrl, TabMode.GENRES, "Жанры", addToHistory = false)
+                  }
+
                   chipFav.setOnClickListener {
-                      highlightActiveChip(chipFav); navHistory.clear()
-                      showSavedList("favorites", "❤️ Любимые треки", TabMode.FAVORITES)
+                      highlightActiveChip(chipFav)
+                      navHistory.clear()
+                      showSavedList("favorites", "Любимые треки")
                   }
+
                   chipHist.setOnClickListener {
-                      highlightActiveChip(chipHist); navHistory.clear()
-                      showSavedList("history", "🕒 История прослушивания", TabMode.HISTORY)
+                      highlightActiveChip(chipHist)
+                      navHistory.clear()
+                      showSavedList("history", "История прослушивания")
                   }
 
                   btnPlayPause.setOnClickListener { if (player.isPlaying) player.pause() else player.play() }
@@ -1138,8 +1087,8 @@ jobs:
                           Toast.makeText(this, "Сначала включите трек", Toast.LENGTH_SHORT).show()
                       } else {
                           val added = toggleFavorite(cur)
-                          btnFavTrack.text = if (added) "❤️" else "♡"
-                          Toast.makeText(this, if (added) "Добавлено в ❤️ Любимые" else "Удалено", Toast.LENGTH_SHORT).show()
+                          btnFavTrack.text = if (added) "♥" else "♡"
+                          Toast.makeText(this, if (added) "Добавлено в Любимые" else "Удалено", Toast.LENGTH_SHORT).show()
                       }
                   }
 
@@ -1158,47 +1107,64 @@ jobs:
               }
 
               private fun showEqualizerDialog() {
-                  val presets = arrayOf("🎵 Обычный", "🔊 Басы в тачку", "🎸 Рок", "💿 Поп / Клуб", "🎤 Вокал")
+                  val presets = arrayOf("Обычный", "Басы в тачку", "Рок", "Поп / Клуб", "Вокал")
                   AlertDialog.Builder(this)
-                      .setTitle("🎛 Эквалайзер и Бас")
+                      .setTitle("Эквалайзер и Бас")
                       .setSingleChoiceItems(presets, MusicEngine.currentAudioPreset) { dialog, which ->
                           MusicEngine.applyAudioPreset(which)
                           Toast.makeText(this, "Режим: ${presets[which]}", Toast.LENGTH_SHORT).show()
                           dialog.dismiss()
                       }
-                      .setNegativeButton("Закрыть", null).show()
+                      .setNegativeButton("Закрыть", null)
+                      .show()
               }
 
               private fun showSleepTimerDialog() {
                   val options = arrayOf("Выключить", "15 минут", "30 минут", "45 минут", "60 минут")
                   val mins = intArrayOf(0, 15, 30, 45, 60)
                   AlertDialog.Builder(this)
-                      .setTitle("🌙 Таймер сна")
+                      .setTitle("Таймер сна")
                       .setItems(options) { _, which ->
                           sleepTimer?.cancel()
                           val m = mins[which]
                           if (m == 0) {
-                              btnSleep.text = "🌙"
+                              btnSleep.text = "⏱"
                               Toast.makeText(this, "Таймер отключен", Toast.LENGTH_SHORT).show()
                           } else {
                               sleepTimer = object : CountDownTimer(m * 60 * 1000L, 60000L) {
-                                  override fun onTick(ms: Long) { btnSleep.text = "🌙 ${(ms / 60000L) + 1}м" }
-                                  override fun onFinish() { player.pause(); btnSleep.text = "🌙" }
+                                  override fun onTick(ms: Long) {
+                                      btnSleep.text = "⏱ ${(ms / 60000L) + 1}m"
+                                  }
+                                  override fun onFinish() {
+                                      player.pause()
+                                      btnSleep.text = "⏱"
+                                  }
                               }.start()
                               Toast.makeText(this, "Музыка выключится через $m мин.", Toast.LENGTH_SHORT).show()
                           }
-                      }.show()
+                      }
+                      .show()
               }
 
               private fun getSavedTracks(key: String): ArrayList<SpaceItem> {
-                  val prefs = getSharedPreferences("spaces_v8", Context.MODE_PRIVATE)
+                  val prefs = getSharedPreferences("spaces_v9", Context.MODE_PRIVATE)
                   val raw = prefs.getString(key, "[]") ?: "[]"
                   val list = ArrayList<SpaceItem>()
                   try {
                       val arr = JSONArray(raw)
                       for (i in 0 until arr.length()) {
                           val o = arr.getJSONObject(i)
-                          list.add(SpaceItem(o.optString("idKey"), o.optString("title"), o.optString("subtitle"), o.optString("url"), false))
+                          list.add(
+                              SpaceItem(
+                                  idKey = o.optString("idKey"),
+                                  title = o.optString("title"),
+                                  subtitle = o.optString("subtitle"),
+                                  url = o.optString("url"),
+                                  isFolder = false,
+                                  directMp3 = o.optString("directMp3"),
+                                  type = ItemType.TRACK
+                              )
+                          )
                       }
                   } catch (_: Exception) {}
                   return list
@@ -1212,33 +1178,37 @@ jobs:
                       o.put("title", item.title)
                       o.put("subtitle", item.subtitle)
                       o.put("url", item.url)
+                      o.put("directMp3", item.directMp3)
                       arr.put(o)
                   }
-                  getSharedPreferences("spaces_v8", Context.MODE_PRIVATE).edit().putString(key, arr.toString()).apply()
+                  getSharedPreferences("spaces_v9", Context.MODE_PRIVATE)
+                      .edit().putString(key, arr.toString()).apply()
               }
 
-              private fun isFavorite(item: SpaceItem): Boolean = getSavedTracks("favorites").any { it.idKey == item.idKey }
+              private fun isFavorite(item: SpaceItem): Boolean =
+                  getSavedTracks("favorites").any { it.idKey == item.idKey || it.title == item.title }
 
               private fun toggleFavorite(item: SpaceItem): Boolean {
                   val favs = getSavedTracks("favorites")
-                  val idx = favs.indexOfFirst { it.idKey == item.idKey }
-                  return if (idx >= 0) { favs.removeAt(idx); saveTracksList("favorites", favs); false }
-                  else { favs.add(0, item); saveTracksList("favorites", favs); true }
+                  val idx = favs.indexOfFirst { it.idKey == item.idKey || it.title == item.title }
+                  return if (idx >= 0) {
+                      favs.removeAt(idx); saveTracksList("favorites", favs); false
+                  } else {
+                      favs.add(0, item); saveTracksList("favorites", favs); true
+                  }
               }
 
-              private fun pushHistory(item: SpaceItem) {
+              private fun addToHistory(item: SpaceItem) {
                   val hist = getSavedTracks("history")
-                  hist.removeAll { it.idKey == item.idKey }
+                  hist.removeAll { it.idKey == item.idKey || it.title == item.title }
                   hist.add(0, item)
                   saveTracksList("history", hist)
               }
 
-              private fun showSavedList(key: String, label: String, mode: TabMode) {
+              private fun showSavedList(key: String, label: String) {
                   loadJob?.cancel()
-                  isLoadingMore = false
                   progressBar.visibility = View.GONE
                   nextPageUrl = null
-                  currentEntry = NavEntry("", mode, label)
                   updateMirrorBadge()
                   val saved = getSavedTracks(key)
                   items.clear(); seenKeys.clear()
@@ -1248,14 +1218,17 @@ jobs:
               }
 
               private fun downloadCurrentTrack() {
-                  val cur = currentPlayingItem ?: return Toast.makeText(this, "Сначала выберите трек", Toast.LENGTH_SHORT).show()
-                  if (Build.VERSION.SDK_INT <= 28 && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                      ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 101)
+                  val cur = currentPlayingItem
+                  if (cur == null) {
+                      Toast.makeText(this, "Сначала выберите трек", Toast.LENGTH_SHORT).show()
                       return
                   }
                   uiScope.launch {
-                      val mp3 = resolveStreamUrl(cur, forDownload = true)
-                      if (mp3.isEmpty()) return@launch Toast.makeText(this@MainActivity, "Не удалось получить MP3", Toast.LENGTH_SHORT).show()
+                      val mp3 = resolveStreamUrl(cur)
+                      if (mp3.isEmpty()) {
+                          Toast.makeText(this@MainActivity, "Не удалось получить MP3", Toast.LENGTH_SHORT).show()
+                          return@launch
+                      }
                       try {
                           val name = "${cur.subtitle} - ${cur.title}".replace(Regex("[\\\\/:*?\"<>|]"), "_").take(90) + ".mp3"
                           val req = DownloadManager.Request(Uri.parse(mp3))
@@ -1281,12 +1254,12 @@ jobs:
                           val raw = input.text.toString().trim()
                           if (raw.isNotEmpty()) {
                               baseHost = extractCleanHost(raw)
-                              liteChecked = false
-                              getSharedPreferences("spaces_v8", Context.MODE_PRIVATE).edit().putString("host", baseHost).apply()
+                              getSharedPreferences("spaces_v9", Context.MODE_PRIVATE).edit().putString("host", baseHost).apply()
                               navHistory.clear(); updateMirrorBadge()
-                              loadSection(topUrl, TabMode.TOP, "Топ-100", addToHistory = false)
+                              loadSection(onlineRootUrl, TabMode.ONLINE, "Музыка онлайн", addToHistory = false)
                           }
-                      }.setNegativeButton("Отмена", null).show()
+                      }
+                      .setNegativeButton("Отмена", null).show()
               }
 
               private fun hideKeyboard() {
@@ -1303,48 +1276,28 @@ jobs:
                   }
               }
 
-              private fun pathOf(url: String): String = Uri.parse(url).path ?: ""
-
-              private fun httpGetHtml(full: String): Pair<String, String>? {
+              private fun fetchDocFast(urlOrPath: String): Document? {
                   return try {
-                      val req = Request.Builder().url(full)
-                          .header("User-Agent", "Mozilla/5.0 (compatible; SpacesPlayer/8.2)")
-                          .header("Accept-Language", "ru,en;q=0.8")
+                      val full = toAbsoluteUrl(urlOrPath)
+                      val req = Request.Builder().url(full).header("User-Agent", MusicEngine.USER_AGENT)
                           .header("Referer", "$baseHost/")
                           .build()
                       httpClient.newCall(req).execute().use { resp ->
                           if (!resp.isSuccessful) return null
                           val html = resp.body?.string() ?: return null
-                          Pair(html, resp.request.url.toString())
+                          val finalHost = "${resp.request.url.scheme}://${resp.request.url.host}"
+                          if (finalHost.contains("spcs") || finalHost.contains("spaces")) baseHost = finalHost
+                          Jsoup.parse(html, resp.request.url.toString())
                       }
                   } catch (_: Exception) { null }
               }
 
-              private fun fetchDoc(urlOrPath: String): Document? {
-                  val full = toAbsoluteUrl(urlOrPath)
-                  var res = httpGetHtml(full) ?: return null
-                  var doc = Jsoup.parse(res.first, res.second)
-                  if (!liteChecked) {
-                      liteChecked = true
-                      val sw = doc.selectFirst("a[href*='dtype=lite']")
-                      if (sw != null) {
-                          httpGetHtml(sw.absUrl("href"))
-                          res = httpGetHtml(full) ?: return null
-                          doc = Jsoup.parse(res.first, res.second)
-                      }
-                  }
-                  val finalUri = Uri.parse(res.second)
-                  val finalHost = "${finalUri.scheme}://${finalUri.host}"
-                  if (finalHost.contains("spcs") || finalHost.contains("spaces")) baseHost = finalHost
-                  return doc
-              }
-
               private fun loadSection(urlOrPath: String, mode: TabMode, title: String, addToHistory: Boolean) {
                   loadJob?.cancel()
-                  isLoadingMore = false
-                  loadedPages.clear()
                   val fullTarget = toAbsoluteUrl(urlOrPath)
-                  if (addToHistory && currentEntry.url != fullTarget) navHistory.push(currentEntry)
+                  if (addToHistory && currentEntry.url.isNotEmpty() && currentEntry.url != fullTarget) {
+                      navHistory.push(currentEntry)
+                  }
                   currentEntry = NavEntry(fullTarget, mode, title)
                   updateMirrorBadge()
 
@@ -1352,299 +1305,255 @@ jobs:
                   tvStatus.text = "Загрузка: $title..."
 
                   loadJob = uiScope.launch {
-                      val doc = withContext(Dispatchers.IO) {
-                          var d = fetchDoc(fullTarget)
-                          val p = pathOf(fullTarget)
-                          if (d != null && mode == TabMode.FOLDER_VIEW && !p.endsWith("/tracks/") && !p.endsWith("/files/")) {
-                              val all = d.select("a[href]").map { it.absUrl("href") }.firstOrNull {
-                                  val ap = pathOf(it)
-                                  ap.startsWith("/music-online/") && (ap.endsWith("/tracks/") || ap.endsWith("/files/"))
-                              }
-                              if (all != null) d = fetchDoc(all) ?: d
-                          }
-                          d
-                      }
+                      val doc = withContext(Dispatchers.IO) { fetchDocFast(fullTarget) }
                       progressBar.visibility = View.GONE
                       updateMirrorBadge()
 
                       if (doc != null) {
-                          nextPageUrl = findNextPageUrl(doc, mode)
-                          val parsed = parseList(doc, mode)
+                          nextPageUrl = findNextPageUrl(doc)
+                          val parsed = parseMusicOnlineDoc(doc, mode)
                           items.clear(); seenKeys.clear()
-                          for (i in parsed) if (seenKeys.add(i.idKey)) items.add(i)
+                          for (i in parsed) {
+                              if (seenKeys.add(i.idKey)) items.add(i)
+                          }
                           adapter.notifyDataSetChanged()
-                          rvTracks.scrollToPosition(0)
                           val tracks = items.count { !it.isFolder }
                           val folders = items.count { it.isFolder }
                           tvStatus.text = when {
-                              tracks > 0 && folders > 0 -> "$title • Разделов: $folders, Треков: $tracks"
                               tracks > 0 -> "$title • Треков: $tracks"
                               folders > 0 -> "$title • Разделов: $folders"
-                              else -> "$title • Ничего не найдено"
+                              else -> "$title • Пусто"
                           }
                       } else {
-                          tvStatus.text = "Ошибка загрузки: $title"
+                          tvStatus.text = "Ошибка загрузки раздела"
                       }
                   }
               }
 
               private fun loadNextPage() {
                   val next = nextPageUrl ?: return
-                  if (!loadedPages.add(next)) { nextPageUrl = null; return }
                   isLoadingMore = true
                   progressBar.visibility = View.VISIBLE
-                  val mode = currentEntry.tabMode
+                  uiScope.launch {
+                      val doc = withContext(Dispatchers.IO) { fetchDocFast(next) }
+                      progressBar.visibility = View.GONE
+                      isLoadingMore = false
+                      if (doc != null) {
+                          nextPageUrl = findNextPageUrl(doc)
+                          val more = parseMusicOnlineDoc(doc, currentEntry.tabMode)
+                          var added = 0
+                          for (m in more) {
+                              if (seenKeys.add(m.idKey)) { items.add(m); added++ }
+                          }
+                          if (added > 0) adapter.notifyDataSetChanged()
+                      }
+                  }
+              }
+
+              // УНИВЕРСАЛЬНЫЙ ПАРСЕР v9.0 (Треки, Альбомы, Исполнители)
+              private fun parseMusicOnlineDoc(doc: Document, mode: TabMode): List<SpaceItem> {
+                  val result = ArrayList<SpaceItem>()
+                  val seen = HashSet<String>()
+
+                  // 1. ИЩЕМ ТРЕКИ (в блоках __adv_list_track, где уже есть ссылка на MP3)
+                  for (container in doc.select("div.__adv_list_track")) {
+                      val player = container.selectFirst("div.player_item")
+                      val mp3 = player?.attr("data-src")?.trim() ?: ""
+                      val artist = player?.attr("data-artist")?.trim() ?: ""
+                      val title = player?.attr("data-title")?.trim() ?: ""
+                      val nid = player?.attr("data-nid")?.trim() ?: ""
+                      
+                      if (title.isEmpty() || mp3.isEmpty()) continue
+
+                      val link = container.selectFirst("a.arrow_link")
+                      val trackUrl = link?.absUrl("href") ?: ""
+                      val id = nid.ifEmpty { extractId(trackUrl) }
+                      if (!seen.add(id)) continue
+
+                      result.add(
+                          SpaceItem(
+                              idKey = "track_$id",
+                              title = title,
+                              subtitle = artist.ifEmpty { "Музыка онлайн" },
+                              url = trackUrl,
+                              isFolder = false,
+                              directMp3 = mp3,
+                              type = ItemType.TRACK
+                          )
+                      )
+                  }
+
+                  // 2. ИЩЕМ АЛЬБОМЫ И ИСПОЛНИТЕЛЕЙ (если это страница поиска или категорий)
+                  if (mode == TabMode.SEARCH || mode == TabMode.ARTISTS || mode == TabMode.GENRES || result.isEmpty()) {
+                      // Исполнители
+                      for (a in doc.select("a[href*=/music-online/artist/]")) {
+                          val url = a.absUrl("href")
+                          val text = a.text().trim()
+                          if (text.isEmpty()) continue
+                          val id = extractId(url)
+                          if (seen.add("artist_$id")) {
+                              result.add(SpaceItem("artist_$id", text, "Исполнитель", url, true, type = ItemType.ARTIST))
+                          }
+                      }
+                      // Альбомы
+                      for (a in doc.select("a[href*=/music-online/album/]")) {
+                          val url = a.absUrl("href")
+                          val text = a.text().trim()
+                          if (text.isEmpty()) continue
+                          val id = extractId(url)
+                          if (seen.add("album_$id")) {
+                              result.add(SpaceItem("album_$id", text, "Альбом", url, true, type = ItemType.ALBUM))
+                          }
+                      }
+                  }
+
+                  return result
+              }
+
+              private fun performMusicOnlineSearch(query: String) {
+                  loadJob?.cancel()
+                  progressBar.visibility = View.VISIBLE
+                  tvStatus.text = "Поиск «$query»..."
+
                   loadJob = uiScope.launch {
-                      try {
-                          val doc = withContext(Dispatchers.IO) { fetchDoc(next) }
-                          progressBar.visibility = View.GONE
-                          if (doc != null) {
-                              nextPageUrl = findNextPageUrl(doc, mode)
-                              var added = 0
-                              for (m in parseList(doc, mode)) {
-                                  if (seenKeys.add(m.idKey)) { items.add(m); added++ }
+                      val found = withContext(Dispatchers.IO) {
+                          val enc = URLEncoder.encode(query, "UTF-8")
+                          // Без T=28, чтобы получить сразу Треки, Исполнителей и Альбомы
+                          val url = "$baseHost/music-online/search/index/?sq=$enc"
+                          
+                          val req = Request.Builder()
+                              .url(url)
+                              .header("User-Agent", MusicEngine.USER_AGENT)
+                              .header("Referer", "$baseHost/music-online/")
+                              .build()
+
+                          try {
+                              httpClient.newCall(req).execute().use { resp ->
+                                  if (!resp.isSuccessful) return@withContext emptyList<SpaceItem>()
+                                  val html = resp.body?.string() ?: return@withContext emptyList<SpaceItem>()
+                                  val doc = Jsoup.parse(html, resp.request.url.toString())
+                                  parseMusicOnlineDoc(doc, TabMode.SEARCH)
                               }
-                              if (added > 0) adapter.notifyDataSetChanged()
-                          } else { nextPageUrl = null }
-                      } finally { isLoadingMore = false }
-                  }
-              }
-
-              private fun parseList(doc: Document, mode: TabMode): List<SpaceItem> {
-                  return when (mode) {
-                      TabMode.ARTISTS -> parseFolders(doc, artistRe, "🎤 Исполнитель")
-                      TabMode.GENRES -> parseFolders(doc, tagRe, "🎼 Жанр")
-                      TabMode.SEARCH -> {
-                          val out = ArrayList<SpaceItem>()
-                          if (loadedPages.isEmpty()) {
-                              out.addAll(parseFolders(doc, artistRe, "🎤 Исполнитель"))
-                              out.addAll(parseFolders(doc, albumRe, "💿 Альбом"))
-                          }
-                          out.addAll(parseTracks(doc))
-                          out
-                      }
-                      else -> {
-                          val tracks = parseTracks(doc)
-                          if (tracks.isNotEmpty()) tracks
-                          else parseFolders(doc, albumRe, "💿 Альбом").ifEmpty { parseFolders(doc, artistRe, "🎤 Исполнитель") }
-                      }
-                  }
-              }
-
-              private fun parseTracks(doc: Document): List<SpaceItem> {
-                  val out = ArrayList<SpaceItem>()
-                  val seen = HashSet<String>()
-                  for (a in doc.select("a[href]")) {
-                      val abs = a.absUrl("href")
-                      if (abs.isEmpty()) continue
-                      val path = pathOf(abs)
-                      val viewId = viewRe.matchEntire(path)?.groupValues?.get(1) ?: ""
-                      val catId = if (viewId.isEmpty()) (catalogTrackRe.matchEntire(path)?.groupValues?.get(1) ?: "") else ""
-                      if (viewId.isEmpty() && catId.isEmpty()) continue
-
-                      val title = a.text().replace(Regex("""\s+"""), " ").trim()
-                      if (!hasLetters(title) || isGenericWord(title)) continue
-
-                      val key = if (viewId.isNotEmpty()) "v$viewId" else "c$catId"
-                      if (!seen.add(key)) continue
-
-                      val artist = artistBefore(a)
-                      val mp3 = rowMp3(a, viewId)
-                      out.add(SpaceItem("track_$key", title.take(90), artist.ifEmpty { "Spaces" }.take(60), abs, false, mp3))
-                  }
-                  return out
-              }
-
-              private fun artistBefore(a: Element): String {
-                  var node: Element? = a
-                  var depth = 0
-                  while (node != null && depth < 3) {
-                      val sb = StringBuilder()
-                      var n: Node? = node.previousSibling()
-                      while (n != null) {
-                          if (n is TextNode) {
-                              sb.insert(0, n.text())
-                          } else if (n is Element) {
-                              val tag = n.tagName()
-                              if (tag == "br" || tag == "div" || tag == "table" || tag == "p" || tag == "li" || tag == "tr") break
-                              if (tag == "a" && n.attr("href").contains("/music/view/")) break
-                              sb.insert(0, n.text())
-                          }
-                          n = n.previousSibling()
-                      }
-                      val s = sb.toString().replace(Regex("""^\s*\d+\s*[.)]\s*"""), "").replace(Regex("""\s+"""), " ").trim().trimEnd(':').trim()
-                      if (hasLetters(s)) return s
-                      node = node.parent()
-                      depth++
-                  }
-                  return ""
-              }
-
-              private fun rowMp3(a: Element, fileId: String): String {
-                  var node: Element? = a.parent()
-                  var depth = 0
-                  while (node != null && depth < 4) {
-                      val distinct = node.select(trackSelector).map { it.attr("href") }.toSet().size
-                      if (distinct > 1) break
-                      val link = node.select("a[href*='.mp3']").firstOrNull { fileId.isEmpty() || it.attr("href").contains("/$fileId/") }
-                      if (link != null) return link.absUrl("href")
-                      node = node.parent()
-                      depth++
-                  }
-                  return ""
-              }
-
-              private fun parseFolders(doc: Document, re: Regex, subtitle: String): List<SpaceItem> {
-                  val out = ArrayList<SpaceItem>()
-                  val seen = HashSet<String>()
-                  for (a in doc.select("a[href]")) {
-                      val abs = a.absUrl("href")
-                      if (abs.isEmpty()) continue
-                      val path = pathOf(abs)
-                      if (!re.matches(path)) continue
-                      val name = (a.selectFirst("b, strong")?.text() ?: a.text()).trim()
-                      if (name.length !in 2..60 || !hasLetters(name)) continue
-                      if (Regex("""^\d+\..*""").matches(name)) continue
-                      if (Regex("""[\d.]+""").matches(name)) continue
-                      if (!seen.add(path)) continue
-                      out.add(SpaceItem("folder_$path", name, subtitle, abs, true))
-                  }
-                  return out
-              }
-
-              private fun hasLetters(s: String) = Regex("""[\p{L}\d]""").containsMatchIn(s)
-              private fun isGenericWord(t: String) = t.lowercase().trim() in setOf("скачать", "слушать", "играть", "файл", "mp3", "все", "показать все")
-
-              private fun findNextPageUrl(doc: Document, mode: TabMode = currentEntry.tabMode): String? {
-                  for (a in doc.select("a[href]")) {
-                      val t = a.text().lowercase().replace('ё', 'е').trim()
-                      if (t.contains("вперед") || t == "»" || t == ">") {
-                          val h = a.absUrl("href")
-                          if (h.isNotEmpty() && h != currentEntry.url && !loadedPages.contains(h)) return h
-                      }
-                  }
-                  if (mode == TabMode.SEARCH) {
-                      for (a in doc.select("a[href]")) {
-                          val h = a.absUrl("href")
-                          val p = pathOf(h)
-                          val t = a.text().lowercase()
-                          if (p.contains("/music-online/search/") &&
-                              (p.contains("track") || p.contains("file") || t.contains("все треки") || t.contains("все песни") || t.startsWith("все ")) &&
-                              !p.contains("artist") && !p.contains("album") &&
-                              h != currentEntry.url && !loadedPages.contains(h)
-                          ) {
-                              return h
+                          } catch (_: Exception) {
+                              emptyList<SpaceItem>()
                           }
                       }
+                      
+                      progressBar.visibility = View.GONE
+                      updateMirrorBadge()
+                      items.clear()
+                      seenKeys.clear()
+                      for (t in found) {
+                          if (seenKeys.add(t.idKey)) items.add(t)
+                      }
+                      adapter.notifyDataSetChanged()
+                      tvStatus.text = if (items.isNotEmpty()) "Найдено: ${items.size}" else "Ничего не найдено"
                   }
-                  return null
+              }
+
+              private fun extractId(url: String): String {
+                  val m = Regex("""/(?:view|download|file|track)/[^/?#]*?(\d{4,})""").find(url)?.groupValues?.get(1)
+                  if (m != null) return m
+                  val p = Regex("""(?:(?:file_id|fid|id|link_id)=(\d{4,}))""").find(url)?.groupValues?.get(1)
+                  if (p != null) return p
+                  return url.substringBefore("?").substringBefore("#")
+              }
+
+              private fun hasLetters(s: String) = Regex("[a-zA-Zа-яА-ЯёЁ]{2,}").containsMatchIn(s)
+
+              private fun findNextPageUrl(doc: Document): String? {
+                  val nextLink = doc.selectFirst("a.pgn__link_next:not(.pgn__link_disabled)")
+                  return nextLink?.absUrl("href")?.takeIf { it.isNotEmpty() }
               }
 
               private fun onItemClicked(pos: Int) {
                   if (pos !in items.indices) return
                   val item = items[pos]
+                  
                   if (item.isFolder) {
-                      loadSection(item.url, TabMode.FOLDER_VIEW, item.title, addToHistory = true)
+                      val nextMode = when (item.type) {
+                          ItemType.ARTIST -> TabMode.ARTISTS
+                          ItemType.ALBUM -> TabMode.FOLDER_VIEW
+                          else -> TabMode.FOLDER_VIEW
+                      }
+                      loadSection(item.url, nextMode, item.title, addToHistory = true)
                   } else {
-                      retriedOnce = false
-                      startPlayback(item, fresh = false)
+                      playTrackAt(pos)
                   }
               }
 
-              private fun pickMp3(doc: Document, id: String, best: Boolean): String {
-                  val links = doc.select("a[href*='.mp3']").map { it.absUrl("href") }.filter { it.isNotEmpty() && (id.isEmpty() || it.contains("/$id/")) }
-                  if (links.isEmpty()) return ""
-                  val order = if (best) listOf("0", "192", "128", "64", "32") else listOf("192", "128", "0", "64", "32")
-                  if (id.isNotEmpty()) {
-                      for (q in order) {
-                          val hit = links.firstOrNull { it.contains("/$id/$q/") }
-                          if (hit != null) return hit
+              private suspend fun resolveStreamUrl(item: SpaceItem): String {
+                  if (item.directMp3.isNotEmpty()) return item.directMp3
+                  val fast = withContext(Dispatchers.IO) {
+                      val doc = fetchDocFast(item.url) ?: return@withContext ""
+                      val audio = doc.selectFirst("audio[src], audio source[src], [data-mp3], [data-src*=.mp3]")
+                      if (audio != null) {
+                          audio.absUrl("src").ifEmpty { audio.absUrl("data-mp3") }
+                      } else {
+                          for (a in doc.select("a[href]")) {
+                              val h = a.absUrl("href")
+                              if (isDirectAudioFileUrl(h)) return@withContext h
+                          }
+                          ""
                       }
                   }
-                  return links.first()
-              }
+                  if (fast.isNotEmpty()) { item.directMp3 = fast; return fast }
 
-              private suspend fun resolveStreamUrl(item: SpaceItem, forDownload: Boolean = false, fresh: Boolean = false): String {
-                  if (!fresh && !forDownload && item.directMp3.isNotEmpty()) return item.directMp3
-                  return withContext(Dispatchers.IO) {
-                      var doc = fetchDoc(item.url) ?: return@withContext item.directMp3
-                      var id = viewRe.find(pathOf(item.url))?.groupValues?.get(1) ?: ""
-                      if (id.isEmpty()) {
-                          val v = doc.select("a[href*='/music/view/']").firstOrNull()
-                          if (v != null) {
-                              val vu = v.absUrl("href")
-                              id = viewRe.find(pathOf(vu))?.groupValues?.get(1) ?: ""
-                              doc = fetchDoc(vu) ?: doc
+                  val web = withTimeoutOrNull(7000L) {
+                      suspendCancellableCoroutine<String> { cont ->
+                          runOnUiThread {
+                              webViewMp3Callback = { found -> if (cont.isActive) cont.resume(found) }
+                              hiddenWebView.loadUrl(item.url)
                           }
                       }
-                      val mp3 = pickMp3(doc, id, forDownload)
-                      if (mp3.isNotEmpty() && !forDownload) item.directMp3 = mp3
-                      mp3
-                  }
+                  } ?: ""
+                  if (web.isNotEmpty()) item.directMp3 = web
+                  return web
               }
 
-              private fun startPlayback(item: SpaceItem, fresh: Boolean) {
+              private fun playTrackAt(index: Int) {
+                  if (index !in items.indices) return
+                  val item = items[index]
+                  if (item.isFolder) { loadSection(item.url, TabMode.FOLDER_VIEW, item.title, addToHistory = true); return }
+
+                  currentIndex = index
                   currentPlayingItem = item
-                  adapter.selectedKey = item.idKey
+                  adapter.selectedIndex = index
                   adapter.notifyDataSetChanged()
 
-                  btnFavTrack.text = if (isFavorite(item)) "❤️" else "♡"
+                  btnFavTrack.text = if (isFavorite(item)) "♥" else "♡"
                   tvNowPlayingTitle.text = item.title
-                  tvNowPlayingSub.text = "Загрузка потока..."
+                  tvNowPlayingSub.text = "Загрузка аудиопотока..."
                   progressBar.visibility = View.VISIBLE
 
-                  val reqId = ++playRequestId
                   uiScope.launch {
-                      val mp3 = resolveStreamUrl(item, fresh = fresh)
-                      if (reqId != playRequestId) return@launch
+                      val mp3 = resolveStreamUrl(item)
                       progressBar.visibility = View.GONE
-                      if (mp3.isEmpty()) {
-                          tvNowPlayingSub.text = "Не удалось получить MP3"
-                          return@launch
+                      if (mp3.isNotEmpty()) {
+                          tvNowPlayingSub.text = item.subtitle
+                          addToHistory(item)
+                          val cookies = allCookies.values.joinToString("; ") { "${it.name}=${it.value}" }
+                          val ds = DefaultHttpDataSource.Factory().setUserAgent(MusicEngine.USER_AGENT).setAllowCrossProtocolRedirects(true)
+                              .setDefaultRequestProperties(mapOf("Referer" to item.url, "Cookie" to cookies))
+                          val meta = MediaMetadata.Builder().setTitle(item.title).setArtist(item.subtitle).build()
+                          val mediaItem = MediaItem.Builder().setUri(mp3).setMediaMetadata(meta).build()
+                          player.setMediaSource(DefaultMediaSourceFactory(ds).createMediaSource(mediaItem))
+                          player.prepare()
+                          player.play()
+                      } else {
+                          tvNowPlayingSub.text = "Ошибка получения MP3"
                       }
-                      tvNowPlayingSub.text = item.subtitle
-                      pushHistory(item)
-
-                      val ds = DefaultHttpDataSource.Factory()
-                          .setUserAgent(MusicEngine.USER_AGENT)
-                          .setAllowCrossProtocolRedirects(true)
-                          .setDefaultRequestProperties(mapOf("Referer" to item.url))
-
-                      val meta = MediaMetadata.Builder().setTitle(item.title).setArtist(item.subtitle).build()
-                      val mediaItem = MediaItem.Builder().setUri(mp3).setMediaMetadata(meta).build()
-                      player.setMediaSource(DefaultMediaSourceFactory(ds).createMediaSource(mediaItem))
-                      player.prepare()
-                      player.play()
                   }
-              }
-
-              private fun currentListIndex(): Int {
-                  val key = currentPlayingItem?.idKey ?: return -1
-                  return items.indexOfFirst { it.idKey == key }
               }
 
               private fun playNextTrack() {
-                  val cur = currentListIndex()
-                  if (cur < 0) return
-                  val next = (cur + 1 until items.size).firstOrNull { !items[it].isFolder }
-                  if (next != null) {
-                      retriedOnce = false
-                      startPlayback(items[next], fresh = false)
-                      rvTracks.scrollToPosition(next)
-                  } else if (nextPageUrl != null && !isLoadingMore) {
-                      loadNextPage()
-                  }
+                  val next = (currentIndex + 1 until items.size).firstOrNull { !items[it].isFolder }
+                  if (next != null) playTrackAt(next)
               }
 
               private fun playPrevTrack() {
-                  val cur = currentListIndex()
-                  if (cur < 0) return
-                  val prev = (cur - 1 downTo 0).firstOrNull { !items[it].isFolder }
-                  if (prev != null) {
-                      retriedOnce = false
-                      startPlayback(items[prev], fresh = false)
-                      rvTracks.scrollToPosition(prev)
-                  }
+                  val prev = (currentIndex - 1 downTo 0).firstOrNull { !items[it].isFolder }
+                  if (prev != null) playTrackAt(prev)
               }
 
               private fun formatTime(ms: Long): String {
@@ -1653,7 +1562,11 @@ jobs:
               }
 
               override fun onBackPressed() {
-                  if (!goBack()) super.onBackPressed()
+                  if (navHistory.isNotEmpty()) {
+                      val p = navHistory.pop()
+                      updateMirrorBadge()
+                      loadSection(p.url, p.tabMode, p.titleHint, addToHistory = false)
+                  } else super.onBackPressed()
               }
 
               override fun onDestroy() {
@@ -1661,13 +1574,13 @@ jobs:
                   sleepTimer?.cancel()
                   handler.removeCallbacksAndMessages(null)
                   uiScope.cancel()
-                  controllerFuture?.let { MediaController.releaseFuture(it) }
               }
 
-              inner class SpaceAdapter(private val list: List<SpaceItem>, private val onClick: (Int) -> Unit) :
-                  RecyclerView.Adapter<SpaceAdapter.VH>() {
-                  var selectedKey: String? = null
-
+              inner class SpaceAdapter(
+                  private val list: List<SpaceItem>,
+                  private val onClick: (Int) -> Unit
+              ) : RecyclerView.Adapter<SpaceAdapter.VH>() {
+                  var selectedIndex = -1
                   inner class VH(v: View) : RecyclerView.ViewHolder(v) {
                       val tvCover: TextView = v.findViewById(R.id.tvCover)
                       val tvTitle: TextView = v.findViewById(R.id.tvTitle)
@@ -1675,24 +1588,30 @@ jobs:
                       val tvPlayIcon: TextView = v.findViewById(R.id.tvPlayIcon)
                   }
 
-                  override fun onCreateViewHolder(p0: ViewGroup, p1: Int): VH =
-                      VH(LayoutInflater.from(p0.context).inflate(R.layout.item_track, p0, false))
+                  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+                      val v = LayoutInflater.from(parent.context).inflate(R.layout.item_track, parent, false)
+                      return VH(v)
+                  }
 
                   override fun onBindViewHolder(holder: VH, position: Int) {
                       val item = list[position]
                       holder.tvTitle.text = item.title
                       holder.tvSubtitle.text = item.subtitle
                       if (item.isFolder) {
-                          holder.tvCover.text = "📁"
+                          holder.tvCover.text = when(item.type) {
+                              ItemType.ARTIST -> "👤"
+                              ItemType.ALBUM -> "💿"
+                              else -> "📁"
+                          }
                           holder.tvTitle.setTextColor(0xFFFFFFFF.toInt())
                           holder.tvPlayIcon.text = "›"
                       } else {
-                          holder.tvCover.text = "♫"
-                          val sel = item.idKey == selectedKey
+                          holder.tvCover.text = "♪"
+                          val sel = position == selectedIndex
                           holder.tvTitle.setTextColor(if (sel) 0xFFFFCC00.toInt() else 0xFFFFFFFF.toInt())
-                          holder.tvPlayIcon.text = if (sel) "⏸" else "▶"
+                          holder.tvPlayIcon.text = if (sel) "❚❚" else "▶"
                       }
-                      holder.itemView.setOnClickListener { onClick(holder.bindingAdapterPosition) }
+                      holder.itemView.setOnClickListener { onClick(position) }
                   }
 
                   override fun getItemCount(): Int = list.size
@@ -1709,5 +1628,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SpacesPlayer-v8.2-APK
+          name: SpacesPlayer-v9-FullSearch-APK
           path: app/build/outputs/apk/debug/*.apk
