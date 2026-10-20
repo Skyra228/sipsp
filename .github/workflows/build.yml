@@ -19,7 +19,7 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Spaces Player v10.2
+      - name: Generate Spaces Player v12.0
         run: |
           rm -rf app/src/main
           mkdir -p app/src/main/java/com/example/spacesplayer
@@ -70,8 +70,8 @@ jobs:
                   applicationId = "com.example.spacesplayer"
                   minSdk = 24
                   targetSdk = 34
-                  versionCode = 10
-                  versionName = "10.2"
+                  versionCode = 12
+                  versionName = "12.0"
               }
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
@@ -442,7 +442,7 @@ jobs:
                               android:id="@+id/tvNowPlayingSub"
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
-                              android:text="Spaces Музыка v10.2"
+                              android:text="Spaces Музыка v12"
                               android:textColor="#8E8E93"
                               android:textSize="11sp"
                               android:singleLine="true"/>
@@ -535,7 +535,7 @@ jobs:
           import androidx.media3.session.MediaSessionService
 
           object MusicEngine {
-              const val USER_AGENT = "Mozilla/5.0 (Linux; Android 14; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome"
+              const val USER_AGENT = "Mozilla/5.0 (Linux; Android 14; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
               var player: ExoPlayer? = null
               var mediaSession: MediaSession? = null
               private var bassBoost: BassBoost? = null
@@ -799,7 +799,7 @@ jobs:
                       startService(Intent(this, PlaybackService::class.java))
                   } catch (_: Exception) {}
 
-                  val prefs = getSharedPreferences("spaces_v10", Context.MODE_PRIVATE)
+                  val prefs = getSharedPreferences("spaces_v12", Context.MODE_PRIVATE)
                   baseHost = extractCleanHost(prefs.getString("host", "https://world84.spcs.bio") ?: "https://world84.spcs.bio")
 
                   rvTracks = findViewById(R.id.rvTracks)
@@ -1131,7 +1131,7 @@ jobs:
               }
 
               private fun getSavedTracks(key: String): ArrayList<SpaceItem> {
-                  val prefs = getSharedPreferences("spaces_v10", Context.MODE_PRIVATE)
+                  val prefs = getSharedPreferences("spaces_v12", Context.MODE_PRIVATE)
                   val raw = prefs.getString(key, "[]") ?: "[]"
                   val list = ArrayList<SpaceItem>()
                   try {
@@ -1165,7 +1165,7 @@ jobs:
                       o.put("directMp3", item.directMp3)
                       arr.put(o)
                   }
-                  getSharedPreferences("spaces_v10", Context.MODE_PRIVATE)
+                  getSharedPreferences("spaces_v12", Context.MODE_PRIVATE)
                       .edit().putString(key, arr.toString()).apply()
               }
 
@@ -1238,7 +1238,7 @@ jobs:
                           val raw = input.text.toString().trim()
                           if (raw.isNotEmpty()) {
                               baseHost = extractCleanHost(raw)
-                              getSharedPreferences("spaces_v10", Context.MODE_PRIVATE).edit().putString("host", baseHost).apply()
+                              getSharedPreferences("spaces_v12", Context.MODE_PRIVATE).edit().putString("host", baseHost).apply()
                               navHistory.clear(); updateMirrorBadge()
                               loadSection(onlineRootUrl, TabMode.ONLINE, "Музыка онлайн", addToHistory = false)
                           }
@@ -1263,7 +1263,10 @@ jobs:
               private fun fetchDocFast(urlOrPath: String): Document? {
                   return try {
                       val full = toAbsoluteUrl(urlOrPath)
-                      val req = Request.Builder().url(full).header("User-Agent", MusicEngine.USER_AGENT)
+                      val req = Request.Builder().url(full)
+                          .header("User-Agent", MusicEngine.USER_AGENT)
+                          .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                          .header("Accept-Language", "ru-RU,ru;q=0.9")
                           .header("Referer", "$baseHost/")
                           .build()
                       httpClient.newCall(req).execute().use { resp ->
@@ -1334,29 +1337,72 @@ jobs:
                   }
               }
 
+              private fun isNoiseText(text: String): Boolean {
+                  val low = text.lowercase().trim()
+                  if (low.isEmpty() || low.length < 2) return true
+                  val noise = setOf(
+                      "назад", "вперёд", "вперед", "все", "показать все", "ещё", "еще",
+                      "меню", "вход", "войти", "регистрация", "поиск", "найти",
+                      "главная", "категории", "популярные", "новые", "новинки",
+                      "онлайн", "артисты", "исполнители", "жанры", "альбомы",
+                      "композиции", "треки", "песни", "музыка", "музыка онлайн",
+                      "показать ещё", "показать еще", "поделиться", "жалоба",
+                      "о сайте", "контакты", "зо", "зона обмена", "первый раз на spaces?",
+                      "тема", "версия", "mobile", "lite", "touch", "pc",
+                      "отключить рекламу", "реклама", "1 из 9", "1 из"
+                  )
+                  if (low in noise) return true
+                  if (low.startsWith("танки")) return true
+                  return false
+              }
+
               private fun parseMusicOnlineDoc(doc: Document, mode: TabMode): List<SpaceItem> {
                   val result = ArrayList<SpaceItem>()
                   val seen = HashSet<String>()
 
+                  // 1. Треки — из любого div.__adv_list_track (мобильная и десктопная разметка)
                   for (container in doc.select("div.__adv_list_track")) {
+                      // Ссылка на трек
+                      val trackLink = container.selectFirst("a[href*=/music/view/], a[href*=/music-online/track/]")
+                          ?: continue
+                      val trackUrl = trackLink.absUrl("href")
+                      val title = trackLink.text().trim()
+                      if (title.isEmpty() || isNoiseText(title)) continue
+
+                      // MP3 — сначала из <a href="*.mp3"> (мобильная версия)
+                      var mp3 = ""
+                      val mp3Link = container.selectFirst("a[href*=.mp3], a[href*=/files/download/], a[href*=/music/download/]")
+                      if (mp3Link != null) {
+                          mp3 = mp3Link.absUrl("href")
+                      }
+                      // MP3 — потом из data-src (десктопная версия)
+                      if (mp3.isEmpty()) {
+                          val playerEl = container.selectFirst("div.player_item")
+                          mp3 = playerEl?.attr("data-src")?.trim() ?: ""
+                      }
+
+                      // Артист — сначала из data-artist (десктоп), потом из ownText div.oh (мобильный)
+                      var artist = ""
                       val playerEl = container.selectFirst("div.player_item")
-                      val mp3 = playerEl?.attr("data-src")?.trim() ?: ""
-                      val artist = playerEl?.attr("data-artist")?.trim() ?: ""
-                      val title = playerEl?.attr("data-title")?.trim() ?: ""
-                      val nid = playerEl?.attr("data-nid")?.trim() ?: ""
+                      if (playerEl != null) {
+                          artist = playerEl.attr("data-artist").trim()
+                      }
+                      if (artist.isEmpty()) {
+                          val ohDiv = container.selectFirst("div.oh")
+                          if (ohDiv != null) {
+                              artist = ohDiv.ownText().trim().trimEnd(':').trim()
+                          }
+                      }
+                      if (artist.isEmpty()) artist = "Музыка онлайн"
 
-                      if (title.isEmpty() || mp3.isEmpty()) continue
-
-                      val link = container.selectFirst("a.arrow_link")
-                      val trackUrl = link?.absUrl("href") ?: ""
-                      val id = nid.ifEmpty { extractId(trackUrl) }
-                      if (!seen.add(id)) continue
+                      val id = extractId(trackUrl)
+                      if (!seen.add("track_$id")) continue
 
                       result.add(
                           SpaceItem(
                               idKey = "track_$id",
                               title = title,
-                              subtitle = artist.ifEmpty { "Музыка онлайн" },
+                              subtitle = artist,
                               url = trackUrl,
                               isFolder = false,
                               directMp3 = mp3,
@@ -1365,11 +1411,12 @@ jobs:
                       )
                   }
 
+                  // 2. Артисты и альбомы — только в режимах SEARCH/ARTISTS/GENRES
                   if (mode == TabMode.SEARCH || mode == TabMode.ARTISTS || mode == TabMode.GENRES || result.isEmpty()) {
                       for (a in doc.select("a[href*=/music-online/artist/]")) {
                           val url = a.absUrl("href")
                           val text = a.text().trim()
-                          if (text.isEmpty()) continue
+                          if (text.isEmpty() || isNoiseText(text)) continue
                           val id = extractId(url)
                           if (seen.add("artist_$id")) {
                               result.add(SpaceItem("artist_$id", text, "Исполнитель", url, true, type = ItemType.ARTIST))
@@ -1378,7 +1425,7 @@ jobs:
                       for (a in doc.select("a[href*=/music-online/album/]")) {
                           val url = a.absUrl("href")
                           val text = a.text().trim()
-                          if (text.isEmpty()) continue
+                          if (text.isEmpty() || isNoiseText(text)) continue
                           val id = extractId(url)
                           if (seen.add("album_$id")) {
                               result.add(SpaceItem("album_$id", text, "Альбом", url, true, type = ItemType.ALBUM))
@@ -1402,6 +1449,8 @@ jobs:
                           val req = Request.Builder()
                               .url(url)
                               .header("User-Agent", MusicEngine.USER_AGENT)
+                              .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                              .header("Accept-Language", "ru-RU,ru;q=0.9")
                               .header("Referer", "$baseHost/music-online/")
                               .build()
 
@@ -1438,8 +1487,17 @@ jobs:
               }
 
               private fun findNextPageUrl(doc: Document): String? {
-                  val nextLink = doc.selectFirst("a.pgn__link_next:not(.pgn__link_disabled)")
-                  return nextLink?.absUrl("href")?.takeIf { it.isNotEmpty() }
+                  // Мобильная версия: div.pgar a с текстом "Вперёд"
+                  for (a in doc.select("div.pgar a")) {
+                      val t = a.text().lowercase()
+                      if (t.contains("вперёд") || t.contains("вперед") || t == ">") {
+                          val h = a.absUrl("href")
+                          if (h.isNotEmpty()) return h
+                      }
+                  }
+                  // Десктопная версия
+                  val desktopNext = doc.selectFirst("a.pgn__link_next:not(.pgn__link_disabled)")
+                  return desktopNext?.absUrl("href")?.takeIf { it.isNotEmpty() }
               }
 
               private fun onItemClicked(pos: Int) {
@@ -1460,33 +1518,21 @@ jobs:
 
               private suspend fun resolveStreamUrl(item: SpaceItem): String {
                   if (item.directMp3.isNotEmpty()) return item.directMp3
-                  val fast = withContext(Dispatchers.IO) {
-                      val doc = fetchDocFast(item.url) ?: return@withContext ""
-                      val audio = doc.selectFirst("audio[src], audio source[src], [data-mp3], [data-src*=.mp3]")
+                  // Fallback: идём на страницу трека и ищем mp3
+                  val doc = withContext(Dispatchers.IO) { fetchDocFast(item.url) }
+                  if (doc != null) {
+                      val mp3Link = doc.selectFirst("a[href*=.mp3], a[href*=/files/download/], a[href*=/music/download/]")
+                      if (mp3Link != null) {
+                          val src = mp3Link.absUrl("href")
+                          if (src.isNotEmpty()) { item.directMp3 = src; return src }
+                      }
+                      val audio = doc.selectFirst("audio[src], audio source[src], [data-src*=.mp3]")
                       if (audio != null) {
-                          audio.absUrl("src").ifEmpty { audio.absUrl("data-mp3") }
-                      } else {
-                          for (a in doc.select("a[href]")) {
-                              val h = a.absUrl("href")
-                              if (isDirectAudioFileUrl(h)) return@withContext h
-                          }
-                          ""
+                          val src = audio.absUrl("src").ifEmpty { audio.attr("data-src") }
+                          if (src.isNotEmpty()) { item.directMp3 = src; return src }
                       }
                   }
-                  if (fast.isNotEmpty()) { item.directMp3 = fast; return fast }
-
-                  val web = withTimeoutOrNull(7000L) {
-                      val deferred = CompletableDeferred<String>()
-                      runOnUiThread {
-                          webViewMp3Callback = { found ->
-                              if (!deferred.isCompleted) deferred.complete(found)
-                          }
-                          hiddenWebView.loadUrl(item.url)
-                      }
-                      deferred.await()
-                  } ?: ""
-                  if (web.isNotEmpty()) item.directMp3 = web
-                  return web
+                  return ""
               }
 
               private fun playTrackAt(index: Int) {
@@ -1611,5 +1657,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SpacesPlayer-v10.2-APK
+          name: SpacesPlayer-v12.0-APK
           path: app/build/outputs/apk/debug/*.apk
