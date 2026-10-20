@@ -19,7 +19,7 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Spaces Player v13.0
+      - name: Generate Spaces Player v13.1
         run: |
           rm -rf app/src/main
           mkdir -p app/src/main/java/com/example/spacesplayer
@@ -71,7 +71,7 @@ jobs:
                   minSdk = 24
                   targetSdk = 34
                   versionCode = 13
-                  versionName = "13.0"
+                  versionName = "13.1"
               }
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
@@ -442,7 +442,7 @@ jobs:
                               android:id="@+id/tvNowPlayingSub"
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
-                              android:text="Spaces Музыка v13"
+                              android:text="Spaces Музыка v13.1"
                               android:textColor="#8E8E93"
                               android:textSize="11sp"
                               android:singleLine="true"/>
@@ -679,6 +679,7 @@ jobs:
           import kotlinx.coroutines.withTimeoutOrNull
           import okhttp3.Cookie
           import okhttp3.CookieJar
+          import okhttp3.FormBody
           import okhttp3.HttpUrl
           import okhttp3.OkHttpClient
           import okhttp3.Request
@@ -701,6 +702,12 @@ jobs:
               val isFolder: Boolean,
               var directMp3: String = "",
               val type: ItemType = ItemType.TRACK
+          )
+
+          data class ParseResult(
+              val items: List<SpaceItem>,
+              val finalUrl: String,
+              val htmlSize: Int
           )
 
           enum class TabMode {
@@ -772,8 +779,8 @@ jobs:
 
               private val allCookies = ConcurrentHashMap<String, Cookie>()
               private val httpClient = OkHttpClient.Builder()
-                  .connectTimeout(10, TimeUnit.SECONDS)
-                  .readTimeout(10, TimeUnit.SECONDS)
+                  .connectTimeout(15, TimeUnit.SECONDS)
+                  .readTimeout(15, TimeUnit.SECONDS)
                   .followRedirects(true)
                   .followSslRedirects(true)
                   .cookieJar(object : CookieJar {
@@ -881,7 +888,6 @@ jobs:
                           }
                           return super.shouldInterceptRequest(view, request)
                       }
-
                       override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                           val url = request?.url?.toString() ?: return false
                           if (webViewMp3Callback != null && isDirectAudioFileUrl(url)) {
@@ -890,7 +896,6 @@ jobs:
                           }
                           return false
                       }
-
                       override fun onPageFinished(view: WebView?, url: String?) {
                           super.onPageFinished(view, url)
                           if (webViewMp3Callback != null) {
@@ -1260,6 +1265,20 @@ jobs:
                   }
               }
 
+              // Убираем Link_id из query (он привязан к сессии и может ломать переход)
+              private fun cleanUrl(url: String): String {
+                  return try {
+                      val uri = Uri.parse(url)
+                      val query = uri.query ?: return url
+                      val keep = mutableListOf<String>()
+                      for (param in query.split("&")) {
+                          if (!param.startsWith("Link_id=")) keep.add(param)
+                      }
+                      val newQuery = keep.joinToString("&")
+                      uri.buildUpon().clearQuery().encodedQuery(newQuery.ifEmpty { null }).build().toString()
+                  } catch (_: Exception) { url }
+              }
+
               private fun fetchDocFast(urlOrPath: String): Document? {
                   return try {
                       val full = toAbsoluteUrl(urlOrPath)
@@ -1267,13 +1286,11 @@ jobs:
                           .header("User-Agent", MusicEngine.USER_AGENT)
                           .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                           .header("Accept-Language", "ru-RU,ru;q=0.9")
-                          .header("Referer", "$baseHost/")
+                          .header("Referer", "$baseHost/music-online/")
                           .build()
                       httpClient.newCall(req).execute().use { resp ->
                           if (!resp.isSuccessful) return null
                           val html = resp.body?.string() ?: return null
-                          val finalHost = "${resp.request.url.scheme}://${resp.request.url.host}"
-                          if (finalHost.contains("spcs") || finalHost.contains("spaces")) baseHost = finalHost
                           Jsoup.parse(html, resp.request.url.toString())
                       }
                   } catch (_: Exception) { null }
@@ -1292,13 +1309,16 @@ jobs:
                   tvStatus.text = "Загрузка: $title..."
 
                   loadJob = uiScope.launch {
-                      val doc = withContext(Dispatchers.IO) { fetchDocFast(fullTarget) }
+                      val (doc, finalUrl) = withContext(Dispatchers.IO) {
+                          val d = fetchDocFast(fullTarget)
+                          Pair(d, d?.location() ?: fullTarget)
+                      }
                       progressBar.visibility = View.GONE
                       updateMirrorBadge()
 
                       if (doc != null) {
                           nextPageUrl = findNextPageUrl(doc)
-                          val parsed = parseMusicOnlineDoc(doc, mode, fullTarget)
+                          val parsed = parseMusicOnlineDoc(doc, mode, finalUrl)
                           items.clear(); seenKeys.clear()
                           for (i in parsed) {
                               if (seenKeys.add(i.idKey)) items.add(i)
@@ -1309,10 +1329,10 @@ jobs:
                           tvStatus.text = when {
                               tracks > 0 -> "$title • Треков: $tracks"
                               folders > 0 -> "$title • Разделов: $folders"
-                              else -> "$title • Пусто"
+                              else -> "$title • Пусто (HTML ${doc.outerHtml().length})"
                           }
                       } else {
-                          tvStatus.text = "Ошибка загрузки раздела"
+                          tvStatus.text = "Ошибка загрузки раздела (HTTP)"
                       }
                   }
               }
@@ -1322,12 +1342,15 @@ jobs:
                   isLoadingMore = true
                   progressBar.visibility = View.VISIBLE
                   uiScope.launch {
-                      val doc = withContext(Dispatchers.IO) { fetchDocFast(next) }
+                      val (doc, finalUrl) = withContext(Dispatchers.IO) {
+                          val d = fetchDocFast(next)
+                          Pair(d, d?.location() ?: next)
+                      }
                       progressBar.visibility = View.GONE
                       isLoadingMore = false
                       if (doc != null) {
                           nextPageUrl = findNextPageUrl(doc)
-                          val more = parseMusicOnlineDoc(doc, currentEntry.tabMode, next)
+                          val more = parseMusicOnlineDoc(doc, currentEntry.tabMode, finalUrl)
                           var added = 0
                           for (m in more) {
                               if (seenKeys.add(m.idKey)) { items.add(m); added++ }
@@ -1351,11 +1374,10 @@ jobs:
                       "тема", "версия", "mobile", "lite", "touch", "pc",
                       "отключить рекламу", "реклама", "список пуст.",
                       "по алфавиту", "выбранные жанры:", "доступные жанры:",
-                      "популярные", "топ-100"
+                      "топ-100", "топ-100 композиций", "топ-100 исполнителей", "топ-100 жанров"
                   )
                   if (low in noise) return true
                   if (low.startsWith("танки") || low.startsWith("битва") || low.startsWith("мафия") || low.startsWith("лорикс") || low.startsWith("мстители") || low.startsWith("зоопарк") || low.startsWith("доценты") || low.startsWith("небоскреб") || low.startsWith("разрушители")) return true
-                  if (low.contains("кб/с") && low.length < 10) return true
                   return false
               }
 
@@ -1384,7 +1406,7 @@ jobs:
                       }
                   }
 
-                  // 1. Треки — на всех страницах, кроме списка артистов и списка жанров
+                  // 1. Треки — на всех страницах кроме списка артистов и списка жанров
                   if (!isArtistsListPage && !isGenresListPage) {
                       for (container in doc.select("div.__adv_list_track")) {
                           val trackLink = container.selectFirst("div.oh a[href*=/music/]")
@@ -1426,7 +1448,7 @@ jobs:
                       }
                   }
 
-                  // 2. Артисты — на страницах поиска, тегов, списка артистов
+                  // 2. Артисты
                   if (isArtistsListPage || isTagPage || mode == TabMode.SEARCH || (result.isEmpty() && !isGenresListPage && !isAlbumPage)) {
                       for (a in doc.select("div.pre_content_wrap a[href*=/music-online/artist/]")) {
                           val url = a.absUrl("href")
@@ -1440,7 +1462,7 @@ jobs:
                       }
                   }
 
-                  // 3. Альбомы — на страницах поиска, тегов, альбома, альбомов артиста
+                  // 3. Альбомы
                   if (isTagPage || isAlbumPage || mode == TabMode.SEARCH || (result.isEmpty() && !isGenresListPage && !isArtistsListPage)) {
                       for (a in doc.select("div.pre_content_wrap a[href*=/music-online/album/]")) {
                           val url = a.absUrl("href")
@@ -1473,35 +1495,26 @@ jobs:
                   return result
               }
 
+              // ПОИСК: сначала POST (как форма на сайте), при пустом результате — GET
               private fun performMusicOnlineSearch(query: String) {
                   loadJob?.cancel()
                   progressBar.visibility = View.VISIBLE
                   tvStatus.text = "Поиск «$query»..."
 
                   loadJob = uiScope.launch {
-                      val found = withContext(Dispatchers.IO) {
-                          val enc = URLEncoder.encode(query, "UTF-8")
-                          val url = "$baseHost/music-online/search/index/?sq=$enc"
-
-                          val req = Request.Builder()
-                              .url(url)
-                              .header("User-Agent", MusicEngine.USER_AGENT)
-                              .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-                              .header("Accept-Language", "ru-RU,ru;q=0.9")
-                              .header("Referer", "$baseHost/music-online/")
-                              .build()
-
-                          try {
-                              httpClient.newCall(req).execute().use { resp ->
-                                  if (!resp.isSuccessful) return@withContext emptyList<SpaceItem>()
-                                  val html = resp.body?.string() ?: return@withContext emptyList<SpaceItem>()
-                                  val doc = Jsoup.parse(html, resp.request.url.toString())
-                                  parseMusicOnlineDoc(doc, TabMode.SEARCH, resp.request.url.toString())
-                              }
-                          } catch (_: Exception) {
-                              emptyList<SpaceItem>()
+                      val result = withContext(Dispatchers.IO) {
+                          var found = trySearchPost(query)
+                          var usedUrl = "$baseHost/music-online/search/index/?sq=$query"
+                          var htmlSize = 0
+                          if (found.isEmpty()) {
+                              val getResult = trySearchGet(query)
+                              found = getResult.first
+                              usedUrl = getResult.second
+                              htmlSize = getResult.third
                           }
+                          Triple(found, usedUrl, htmlSize)
                       }
+                      val (found, finalUrl, htmlSize) = result
 
                       progressBar.visibility = View.GONE
                       updateMirrorBadge()
@@ -1511,13 +1524,67 @@ jobs:
                           if (seenKeys.add(t.idKey)) items.add(t)
                       }
                       adapter.notifyDataSetChanged()
-                      tvStatus.text = if (items.isNotEmpty()) "Найдено: ${items.size}" else "Ничего не найдено"
+                      val tracks = items.count { !it.isFolder }
+                      val folders = items.count { it.isFolder }
+                      tvStatus.text = when {
+                          tracks > 0 && folders > 0 -> "Найдено: $tracks треков + $folders разделов"
+                          tracks > 0 -> "Найдено: $tracks треков"
+                          folders > 0 -> "Найдено: $folders разделов"
+                          htmlSize > 0 -> "Пусто (HTML $htmlSize байт)"
+                          else -> "Ничего не найдено"
+                      }
                   }
+              }
+
+              private fun trySearchPost(query: String): List<SpaceItem> {
+                  return try {
+                      val url = "$baseHost/music-online/search/index/"
+                      val body = FormBody.Builder()
+                          .add("sq", query)
+                          .add("T", "0")
+                          .add("CK", "1")
+                          .build()
+                      val req = Request.Builder().url(url).post(body)
+                          .header("User-Agent", MusicEngine.USER_AGENT)
+                          .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                          .header("Accept-Language", "ru-RU,ru;q=0.9")
+                          .header("Referer", "$baseHost/music-online/")
+                          .header("Origin", baseHost)
+                          .build()
+                      httpClient.newCall(req).execute().use { resp ->
+                          if (!resp.isSuccessful) return emptyList()
+                          val html = resp.body?.string() ?: return emptyList()
+                          val doc = Jsoup.parse(html, resp.request.url.toString())
+                          parseMusicOnlineDoc(doc, TabMode.SEARCH, doc.location() ?: resp.request.url.toString())
+                      }
+                  } catch (_: Exception) { emptyList() }
+              }
+
+              private fun trySearchGet(query: String): Triple<List<SpaceItem>, String, Int> {
+                  return try {
+                      val enc = URLEncoder.encode(query, "UTF-8")
+                      val url = "$baseHost/music-online/search/index/?sq=$enc&T=0&CK=1"
+                      val req = Request.Builder().url(url)
+                          .header("User-Agent", MusicEngine.USER_AGENT)
+                          .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                          .header("Accept-Language", "ru-RU,ru;q=0.9")
+                          .header("Referer", "$baseHost/music-online/")
+                          .build()
+                      httpClient.newCall(req).execute().use { resp ->
+                          if (!resp.isSuccessful) return Triple(emptyList(), url, 0)
+                          val html = resp.body?.string() ?: return Triple(emptyList(), url, 0)
+                          val doc = Jsoup.parse(html, resp.request.url.toString())
+                          val items = parseMusicOnlineDoc(doc, TabMode.SEARCH, doc.location() ?: resp.request.url.toString())
+                          Triple(items, resp.request.url.toString(), html.length)
+                      }
+                  } catch (_: Exception) { Triple(emptyList(), "", 0) }
               }
 
               private fun extractId(url: String): String {
                   val m = Regex("""/(?:view|download|file|track)/[^/?#]*?(\d{4,})""").find(url)?.groupValues?.get(1)
                   if (m != null) return m
+                  val mTrack = Regex("""/music-online/track/[^/]+/([a-z0-9-]+-\d+)""").find(url)?.groupValues?.get(1)
+                  if (mTrack != null) return mTrack
                   val mTag = Regex("""/music-online/search/by_tag/([a-z0-9-]+-\d+)""").find(url)?.groupValues?.get(1)
                   if (mTag != null) return mTag
                   val m2 = Regex("""/music-online/album/[^/]+/([a-z0-9-]+-\d+)""").find(url)?.groupValues?.get(1)
@@ -1552,7 +1619,7 @@ jobs:
                           ItemType.GENRE -> TabMode.FOLDER_VIEW
                           else -> TabMode.FOLDER_VIEW
                       }
-                      loadSection(item.url, nextMode, item.title, addToHistory = true)
+                      loadSection(cleanUrl(item.url), nextMode, item.title, addToHistory = true)
                   } else {
                       playTrackAt(pos)
                   }
@@ -1711,5 +1778,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SpacesPlayer-v13.0-APK
+          name: SpacesPlayer-v13.1-APK
           path: app/build/outputs/apk/debug/*.apk
