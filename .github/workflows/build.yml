@@ -14,19 +14,18 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle 8.9
+      - name: Setup Gradle 8.5
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.5'
 
-      - name: Generate Spaces Player v10
+      - name: Generate Spaces Player v10.1
         run: |
           rm -rf app/src/main
           mkdir -p app/src/main/java/com/example/spacesplayer
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
 
-          # 1. settings.gradle.kts
           cat << 'EOF' > settings.gradle.kts
           pluginManagement {
               repositories {
@@ -40,29 +39,25 @@ jobs:
               repositories {
                   google()
                   mavenCentral()
-                  maven { url = uri("https://repo1.maven.org/maven2") }
               }
           }
           rootProject.name = "SpacesPlayer"
           include(":app")
           EOF
 
-          # 2. build.gradle.kts
           cat << 'EOF' > build.gradle.kts
           plugins {
-              id("com.android.application") version "8.7.3" apply false
-              id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+              id("com.android.application") version "8.2.2" apply false
+              id("org.jetbrains.kotlin.android") version "1.9.22" apply false
           }
           EOF
 
-          # 3. gradle.properties (ИСПРАВЛЕНО: удален android.enableJetifier)
           cat << 'EOF' > gradle.properties
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           android.useAndroidX=true
           kotlin.code.style=official
           EOF
 
-          # 4. app/build.gradle.kts (Откат Media3 до 1.2.1 для стабильности)
           cat << 'EOF' > app/build.gradle.kts
           plugins {
               id("com.android.application")
@@ -70,13 +65,13 @@ jobs:
           }
           android {
               namespace = "com.example.spacesplayer"
-              compileSdk = 35
+              compileSdk = 34
               defaultConfig {
                   applicationId = "com.example.spacesplayer"
                   minSdk = 24
-                  targetSdk = 35
+                  targetSdk = 34
                   versionCode = 10
-                  versionName = "10.1-Modern"
+                  versionName = "10.1"
               }
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
@@ -87,21 +82,20 @@ jobs:
               }
           }
           dependencies {
-              implementation("androidx.core:core-ktx:1.15.0")
-              implementation("androidx.appcompat:appcompat:1.7.0")
-              implementation("com.google.android.material:material:1.12.0")
+              implementation("androidx.core:core-ktx:1.12.0")
+              implementation("androidx.appcompat:appcompat:1.6.1")
+              implementation("com.google.android.material:material:1.11.0")
               implementation("androidx.recyclerview:recyclerview:1.3.2")
               implementation("androidx.media3:media3-exoplayer:1.2.1")
               implementation("androidx.media3:media3-session:1.2.1")
               implementation("androidx.media3:media3-ui:1.2.1")
-              implementation("org.json:json:20240303")
+              implementation("org.json:json:20231013")
               implementation("com.squareup.okhttp3:okhttp:4.12.0")
-              implementation("org.jsoup:jsoup:1.18.3")
-              implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+              implementation("org.jsoup:jsoup:1.17.2")
+              implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
           }
           EOF
 
-          # 5. Шейпы дизайна
           cat << 'EOF' > app/src/main/res/drawable/bg_search.xml
           <?xml version="1.0" encoding="utf-8"?>
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
@@ -135,7 +129,6 @@ jobs:
           </shape>
           EOF
 
-          # 6. item_track.xml
           cat << 'EOF' > app/src/main/res/layout/item_track.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -200,7 +193,6 @@ jobs:
           </LinearLayout>
           EOF
 
-          # 7. activity_main.xml
           cat << 'EOF' > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -492,7 +484,6 @@ jobs:
           </LinearLayout>
           EOF
 
-          # 8. AndroidManifest.xml
           cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -527,7 +518,6 @@ jobs:
           </manifest>
           EOF
 
-          # 9. PlaybackService.kt
           cat << 'EOF' > app/src/main/java/com/example/spacesplayer/PlaybackService.kt
           package com.example.spacesplayer
 
@@ -535,14 +525,14 @@ jobs:
           import android.content.Intent
           import android.media.audiofx.BassBoost
           import android.media.audiofx.Equalizer
-          import android.media3.common.AudioAttributes
-          import android.media3.common.C
-          import android.media3.common.Player
-          import android.media3.datasource.DefaultHttpDataSource
-          import android.media3.exoplayer.ExoPlayer
-          import android.media3.exoplayer.source.DefaultMediaSourceFactory
-          import android.media3.session.MediaSession
-          import android.media3.session.MediaSessionService
+          import androidx.media3.common.AudioAttributes
+          import androidx.media3.common.C
+          import androidx.media3.common.Player
+          import androidx.media3.datasource.DefaultHttpDataSource
+          import androidx.media3.exoplayer.ExoPlayer
+          import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+          import androidx.media3.session.MediaSession
+          import androidx.media3.session.MediaSessionService
 
           object MusicEngine {
               const val USER_AGENT = "Mozilla/5.0 (Linux; Android 14; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome"
@@ -586,6 +576,7 @@ jobs:
                       equalizer?.release()
                       val bb = BassBoost(0, sessionId)
                       val eq = Equalizer(0, sessionId)
+                      val presetCount = eq.numberOfPresets.toInt()
                       when (presetIndex) {
                           0 -> {
                               bb.enabled = false
@@ -595,35 +586,22 @@ jobs:
                               bb.enabled = true
                               if (bb.strengthSupported) bb.setStrength(1000.toShort())
                               eq.enabled = true
-                              if (eq.numberOfPresets > 0) eq.usePreset(0)
+                              if (presetCount > 0) eq.usePreset(0.toShort())
                           }
                           2 -> {
                               bb.enabled = true
                               if (bb.strengthSupported) bb.setStrength(500.toShort())
-                              eq.enabled = true
-                              val p = (0 until eq.numberOfPresets).firstOrNull {
-                                  eq.getPresetName(it.toShort()).lowercase().contains("rock")
-                              } ?: 0
-                              if (eq.numberOfPresets > 0) eq.usePreset(p.toShort())
+                              eq.enabled = false
                           }
                           3 -> {
                               bb.enabled = true
                               if (bb.strengthSupported) bb.setStrength(650.toShort())
-                              eq.enabled = true
-                              val p = (0 until eq.numberOfPresets).firstOrNull {
-                                  val n = eq.getPresetName(it.toShort()).lowercase()
-                                  n.contains("pop") || n.contains("dance")
-                              } ?: 0
-                              if (eq.numberOfPresets > 0) eq.usePreset(p.toShort())
+                              eq.enabled = false
                           }
                           4 -> {
                               bb.enabled = false
                               eq.enabled = true
-                              val p = (0 until eq.numberOfPresets).firstOrNull {
-                                  val n = eq.getPresetName(it.toShort()).lowercase()
-                                  n.contains("vocal") || n.contains("flat") || n.contains("jazz")
-                              } ?: 0
-                              if (eq.numberOfPresets > 0) eq.usePreset(p.toShort())
+                              if (presetCount > 0) eq.usePreset(0.toShort())
                           }
                       }
                       bassBoost = bb
@@ -651,7 +629,6 @@ jobs:
           }
           EOF
 
-          # 10. MainActivity.kt (v10.1 Modern Engine)
           cat << 'EOF' > app/src/main/java/com/example/spacesplayer/MainActivity.kt
           package com.example.spacesplayer
 
@@ -671,8 +648,17 @@ jobs:
           import android.view.ViewGroup
           import android.view.inputmethod.EditorInfo
           import android.view.inputmethod.InputMethodManager
-          import android.webkit.*
-          import android.widget.*
+          import android.webkit.CookieManager
+          import android.webkit.WebResourceRequest
+          import android.webkit.WebResourceResponse
+          import android.webkit.WebView
+          import android.webkit.WebViewClient
+          import android.widget.Button
+          import android.widget.EditText
+          import android.widget.ProgressBar
+          import android.widget.SeekBar
+          import android.widget.TextView
+          import android.widget.Toast
           import androidx.appcompat.app.AppCompatActivity
           import androidx.media3.common.MediaItem
           import androidx.media3.common.MediaMetadata
@@ -682,8 +668,22 @@ jobs:
           import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
           import androidx.recyclerview.widget.LinearLayoutManager
           import androidx.recyclerview.widget.RecyclerView
-          import kotlinx.coroutines.*
-          import okhttp3.*
+          import kotlinx.coroutines.CoroutineScope
+          import kotlinx.coroutines.Dispatchers
+          import kotlinx.coroutines.Job
+          import kotlinx.coroutines.SupervisorJob
+          import kotlinx.coroutines.cancel
+          import kotlinx.coroutines.launch
+          import kotlinx.coroutines.resume
+          import kotlinx.coroutines.suspendCancellableCoroutine
+          import kotlinx.coroutines.withContext
+          import kotlinx.coroutines.withTimeoutOrNull
+          import okhttp3.Cookie
+          import okhttp3.CookieJar
+          import okhttp3.FormBody
+          import okhttp3.HttpUrl
+          import okhttp3.OkHttpClient
+          import okhttp3.Request
           import org.json.JSONArray
           import org.json.JSONObject
           import org.jsoup.Jsoup
@@ -692,7 +692,6 @@ jobs:
           import java.util.Stack
           import java.util.concurrent.ConcurrentHashMap
           import java.util.concurrent.TimeUnit
-          import kotlin.coroutines.resume
 
           enum class ItemType { TRACK, ALBUM, ARTIST, FOLDER }
 
@@ -760,10 +759,10 @@ jobs:
               private val navHistory = Stack<NavEntry>()
               private var currentEntry = NavEntry("/music-online/", TabMode.ONLINE, "Музыка онлайн")
 
-              private var onlineRootUrl = "/music-online/"
-              private var popularTabUrl = "/music-online/"
-              private var artistsTabUrl = "/music-online/artists/"
-              private var genresTabUrl = "/music-online/genres/"
+              private val onlineRootUrl = "/music-online/"
+              private val popularTabUrl = "/music-online/"
+              private val artistsTabUrl = "/music-online/artists/"
+              private val genresTabUrl = "/music-online/genres/"
 
               private var sleepTimer: CountDownTimer? = null
               private val uiScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -1352,19 +1351,17 @@ jobs:
                   }
               }
 
-              // УНИВЕРСАЛЬНЫЙ ПАРСЕР v10.0 (Треки, Альбомы, Исполнители)
               private fun parseMusicOnlineDoc(doc: Document, mode: TabMode): List<SpaceItem> {
                   val result = ArrayList<SpaceItem>()
                   val seen = HashSet<String>()
 
-                  // 1. ИЩЕМ ТРЕКИ (в блоках __adv_list_track, где уже есть ссылка на MP3)
                   for (container in doc.select("div.__adv_list_track")) {
-                      val player = container.selectFirst("div.player_item")
-                      val mp3 = player?.attr("data-src")?.trim() ?: ""
-                      val artist = player?.attr("data-artist")?.trim() ?: ""
-                      val title = player?.attr("data-title")?.trim() ?: ""
-                      val nid = player?.attr("data-nid")?.trim() ?: ""
-                      
+                      val playerEl = container.selectFirst("div.player_item")
+                      val mp3 = playerEl?.attr("data-src")?.trim() ?: ""
+                      val artist = playerEl?.attr("data-artist")?.trim() ?: ""
+                      val title = playerEl?.attr("data-title")?.trim() ?: ""
+                      val nid = playerEl?.attr("data-nid")?.trim() ?: ""
+
                       if (title.isEmpty() || mp3.isEmpty()) continue
 
                       val link = container.selectFirst("a.arrow_link")
@@ -1385,9 +1382,7 @@ jobs:
                       )
                   }
 
-                  // 2. ИЩЕМ АЛЬБОМЫ И ИСПОЛНИТЕЛЕЙ (если это страница поиска или категорий)
                   if (mode == TabMode.SEARCH || mode == TabMode.ARTISTS || mode == TabMode.GENRES || result.isEmpty()) {
-                      // Исполнители
                       for (a in doc.select("a[href*=/music-online/artist/]")) {
                           val url = a.absUrl("href")
                           val text = a.text().trim()
@@ -1397,7 +1392,6 @@ jobs:
                               result.add(SpaceItem("artist_$id", text, "Исполнитель", url, true, type = ItemType.ARTIST))
                           }
                       }
-                      // Альбомы
                       for (a in doc.select("a[href*=/music-online/album/]")) {
                           val url = a.absUrl("href")
                           val text = a.text().trim()
@@ -1420,9 +1414,8 @@ jobs:
                   loadJob = uiScope.launch {
                       val found = withContext(Dispatchers.IO) {
                           val enc = URLEncoder.encode(query, "UTF-8")
-                          // Без T=28, чтобы получить сразу Треки, Исполнителей и Альбомы
                           val url = "$baseHost/music-online/search/index/?sq=$enc"
-                          
+
                           val req = Request.Builder()
                               .url(url)
                               .header("User-Agent", MusicEngine.USER_AGENT)
@@ -1440,7 +1433,7 @@ jobs:
                               emptyList<SpaceItem>()
                           }
                       }
-                      
+
                       progressBar.visibility = View.GONE
                       updateMirrorBadge()
                       items.clear()
@@ -1461,8 +1454,6 @@ jobs:
                   return url.substringBefore("?").substringBefore("#")
               }
 
-              private fun hasLetters(s: String) = Regex("[a-zA-Zа-яА-ЯёЁ]{2,}").containsMatchIn(s)
-
               private fun findNextPageUrl(doc: Document): String? {
                   val nextLink = doc.selectFirst("a.pgn__link_next:not(.pgn__link_disabled)")
                   return nextLink?.absUrl("href")?.takeIf { it.isNotEmpty() }
@@ -1471,7 +1462,7 @@ jobs:
               private fun onItemClicked(pos: Int) {
                   if (pos !in items.indices) return
                   val item = items[pos]
-                  
+
                   if (item.isFolder) {
                       val nextMode = when (item.type) {
                           ItemType.ARTIST -> TabMode.ARTISTS
@@ -1563,12 +1554,16 @@ jobs:
                   return String.format("%d:%02d", (ms / 1000) / 60, (ms / 1000) % 60)
               }
 
+              @Deprecated("Deprecated in Java")
               override fun onBackPressed() {
                   if (navHistory.isNotEmpty()) {
                       val p = navHistory.pop()
                       updateMirrorBadge()
                       loadSection(p.url, p.tabMode, p.titleHint, addToHistory = false)
-                  } else super.onBackPressed()
+                  } else {
+                      @Suppress("DEPRECATION")
+                      super.onBackPressed()
+                  }
               }
 
               override fun onDestroy() {
@@ -1583,6 +1578,7 @@ jobs:
                   private val onClick: (Int) -> Unit
               ) : RecyclerView.Adapter<SpaceAdapter.VH>() {
                   var selectedIndex = -1
+
                   inner class VH(v: View) : RecyclerView.ViewHolder(v) {
                       val tvCover: TextView = v.findViewById(R.id.tvCover)
                       val tvTitle: TextView = v.findViewById(R.id.tvTitle)
@@ -1600,7 +1596,7 @@ jobs:
                       holder.tvTitle.text = item.title
                       holder.tvSubtitle.text = item.subtitle
                       if (item.isFolder) {
-                          holder.tvCover.text = when(item.type) {
+                          holder.tvCover.text = when (item.type) {
                               ItemType.ARTIST -> "👤"
                               ItemType.ALBUM -> "💿"
                               else -> "📁"
@@ -1630,5 +1626,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SpacesPlayer-v10.1-Fixed-APK
+          name: SpacesPlayer-v10.1-APK
           path: app/build/outputs/apk/debug/*.apk
