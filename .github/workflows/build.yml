@@ -20,7 +20,7 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Spaces Player v8.1
+      - name: Generate Spaces Player v8.2 ULTRA
         run: |
           rm -rf app/src/main
           mkdir -p app/src/main/java/com/example/spacesplayer
@@ -74,8 +74,8 @@ jobs:
                   applicationId = "com.example.spacesplayer"
                   minSdk = 26
                   targetSdk = 34
-                  versionCode = 81
-                  versionName = "8.1-SpacesMusic"
+                  versionCode = 82
+                  versionName = "8.2-SpacesAuth"
               }
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
@@ -207,27 +207,27 @@ jobs:
               android:orientation="vertical"
               android:background="#0A0A0A">
 
-              <!-- Шапка -->
+              <!-- Шапка с кнопками входа, эквалайзера и таймера -->
               <LinearLayout
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:orientation="horizontal"
                   android:gravity="center_vertical"
-                  android:paddingHorizontal="14dp"
+                  android:paddingHorizontal="12dp"
                   android:paddingTop="12dp"
                   android:paddingBottom="6dp">
 
                   <TextView
                       android:id="@+id/btnBackNav"
-                      android:layout_width="34dp"
-                      android:layout_height="34dp"
+                      android:layout_width="32dp"
+                      android:layout_height="32dp"
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
                       android:text="←"
                       android:textColor="#FFFFFF"
-                      android:textSize="17sp"
+                      android:textSize="16sp"
                       android:textStyle="bold"
-                      android:layout_marginEnd="8dp"
+                      android:layout_marginEnd="6dp"
                       android:visibility="gone" />
 
                   <TextView
@@ -236,42 +236,55 @@ jobs:
                       android:layout_weight="1"
                       android:text="Spaces Музыка"
                       android:textColor="#FFFFFF"
-                      android:textSize="18sp"
+                      android:textSize="17sp"
                       android:textStyle="bold"
                       android:singleLine="true" />
 
                   <TextView
+                      android:id="@+id/btnLogin"
+                      android:layout_width="wrap_content"
+                      android:layout_height="32dp"
+                      android:background="@drawable/bg_chip"
+                      android:gravity="center"
+                      android:paddingHorizontal="8dp"
+                      android:text="👤 Войти"
+                      android:textColor="#FFCC00"
+                      android:textSize="11sp"
+                      android:textStyle="bold"
+                      android:layout_marginEnd="4dp" />
+
+                  <TextView
                       android:id="@+id/btnEq"
-                      android:layout_width="34dp"
-                      android:layout_height="34dp"
+                      android:layout_width="32dp"
+                      android:layout_height="32dp"
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
                       android:text="🎛"
-                      android:textSize="14sp"
-                      android:layout_marginEnd="6dp" />
+                      android:textSize="13sp"
+                      android:layout_marginEnd="4dp" />
 
                   <TextView
                       android:id="@+id/btnSleep"
                       android:layout_width="wrap_content"
-                      android:layout_height="34dp"
+                      android:layout_height="32dp"
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
-                      android:paddingHorizontal="10dp"
+                      android:paddingHorizontal="8dp"
                       android:text="🌙"
                       android:textColor="#FFFFFF"
-                      android:textSize="12sp"
-                      android:layout_marginEnd="6dp" />
+                      android:textSize="11sp"
+                      android:layout_marginEnd="4dp" />
 
                   <TextView
                       android:id="@+id/tvMirror"
                       android:layout_width="wrap_content"
-                      android:layout_height="34dp"
+                      android:layout_height="32dp"
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
-                      android:paddingHorizontal="10dp"
-                      android:text="⚙ world84"
+                      android:paddingHorizontal="8dp"
+                      android:text="⚙"
                       android:textColor="#FFCC00"
-                      android:textSize="11sp"
+                      android:textSize="10sp"
                       android:textStyle="bold" />
               </LinearLayout>
 
@@ -444,7 +457,7 @@ jobs:
                               android:id="@+id/tvNowPlayingSub"
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
-                              android:text="Spaces Музыка • v8.1"
+                              android:text="Spaces Музыка • v8.2"
                               android:textColor="#8E8E93"
                               android:textSize="11sp"
                               android:singleLine="true" />
@@ -494,9 +507,7 @@ jobs:
               <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
               <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
               <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-              <uses-permission
-                  android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-                  android:maxSdkVersion="28" />
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
               <application
                   android:allowBackup="true"
@@ -515,6 +526,11 @@ jobs:
                           <category android:name="android.intent.category.LAUNCHER" />
                       </intent-filter>
                   </activity>
+
+                  <activity
+                      android:name=".LoginActivity"
+                      android:exported="false"
+                      android:theme="@style/Theme.Material3.Dark.NoActionBar" />
 
                   <service
                       android:name=".PlaybackService"
@@ -653,15 +669,91 @@ jobs:
           }
           EOF
 
-          # 10. MainActivity.kt (v8.1: парсер под реальную разметку Spaces)
+          # 10. LoginActivity.kt (Встроенный WebView для авторизации и сохранения sid)
+          cat << 'EOF' > app/src/main/java/com/example/spacesplayer/LoginActivity.kt
+          package com.example.spacesplayer
+
+          import android.annotation.SuppressLint
+          import android.app.Activity
+          import android.content.Intent
+          import android.os.Bundle
+          import android.webkit.CookieManager
+          import android.webkit.WebView
+          import android.webkit.WebViewClient
+          import android.widget.LinearLayout
+          import android.widget.TextView
+
+          class LoginActivity : AppCompatActivity() {
+              @SuppressLint("SetJavaScriptEnabled")
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  val layout = LinearLayout(this).apply {
+                      orientation = LinearLayout.VERTICAL
+                      setBackgroundColor(0xFF0A0A0A.toInt())
+                  }
+
+                  val topBar = LinearLayout(this).apply {
+                      orientation = LinearLayout.HORIZONTAL
+                      setPadding(30, 20, 30, 20)
+                      setBackgroundColor(0xFF18181A.toInt())
+                  }
+
+                  val title = TextView(this).apply {
+                      text = "Авторизация в Spaces"
+                      setTextColor(0xFFFFFFFF.toInt())
+                      textSize = 16f
+                      layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                  }
+
+                  val closeBtn = TextView(this).apply {
+                      text = "✕ Закрыть"
+                      setTextColor(0xFFFFCC00.toInt())
+                      textSize = 14f
+                      setOnClickListener { finish() }
+                  }
+
+                  topBar.addView(title)
+                  topBar.addView(closeBtn)
+                  layout.addView(topBar)
+
+                  val webView = WebView(this).apply {
+                      layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
+                      settings.javaScriptEnabled = true
+                      settings.domStorageEnabled = true
+                      webViewClient = object : WebViewClient() {
+                          override fun onPageFinished(view: WebView?, url: String?) {
+                              super.onPageFinished(view, url)
+                              val cookies = CookieManager.getInstance().getCookie(url ?: "")
+                              if (cookies != null && cookies.contains("sid=")) {
+                                  val prefs = getSharedPreferences("spaces_v8", MODE_PRIVATE)
+                                  prefs.edit().putString("cookies", cookies).apply()
+                                  setResult(Activity.RESULT_OK)
+                                  finish()
+                              }
+                          }
+                      }
+                  }
+
+                  layout.addView(webView)
+                  setContentView(layout)
+
+                  val host = intent.getStringExtra("host") ?: "https://world84.spcs.bio"
+                  webView.loadUrl("$host/login/")
+              }
+          }
+          EOF
+
+          # 11. MainActivity.kt (v8.2 — Гибридный поиск, Исполнители, Альбомы, Авторизация)
           cat << 'EOF' > app/src/main/java/com/example/spacesplayer/MainActivity.kt
           package com.example.spacesplayer
 
           import android.Manifest
+          import android.app.Activity
           import android.app.AlertDialog
           import android.app.DownloadManager
           import android.content.ComponentName
           import android.content.Context
+          import android.content.Intent
           import android.content.pm.PackageManager
           import android.net.Uri
           import android.os.Build
@@ -681,6 +773,7 @@ jobs:
           import android.widget.SeekBar
           import android.widget.TextView
           import android.widget.Toast
+          import androidx.activity.result.contract.ActivityResultContracts
           import androidx.appcompat.app.AppCompatActivity
           import androidx.core.app.ActivityCompat
           import androidx.core.content.ContextCompat
@@ -751,6 +844,7 @@ jobs:
               private lateinit var tvStatus: TextView
               private lateinit var tvMirror: TextView
               private lateinit var btnBackNav: TextView
+              private lateinit var btnLogin: TextView
               private lateinit var btnEq: TextView
               private lateinit var btnSleep: TextView
               private lateinit var etSearch: EditText
@@ -797,12 +891,19 @@ jobs:
               private var baseHost = "https://world84.spcs.bio"
               private var liteChecked = false
 
-              // Регулярки под разметку Spaces (проверены на world84.spcs.bio)
               private val viewRe = Regex("""/music/view/(\d+)/?""")
               private val catalogTrackRe = Regex("""/music-online/track/[^/]+/[^/]+-(\d+)/?""")
               private val artistRe = Regex("""/music-online/artist/[^/]+/?""")
+              private val albumRe = Regex("""/music-online/album/[^/]+/[^/]+/?""")
               private val tagRe = Regex("""/music-online/search/by_tag/[^/]+/?""")
               private val trackSelector = "a[href*='/music/view/'], a[href*='/music-online/track/']"
+
+              private val loginLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                  if (result.resultCode == Activity.RESULT_OK) {
+                      Toast.makeText(this, "Авторизация успешна!", Toast.LENGTH_SHORT).show()
+                      loadSection(currentEntry.url, currentEntry.tabMode, currentEntry.titleHint, addToHistory = false)
+                  }
+              }
 
               private val cookieStore = ConcurrentHashMap<String, List<Cookie>>()
               private val httpClient = OkHttpClient.Builder()
@@ -815,10 +916,20 @@ jobs:
                           val kept = cookieStore[url.host].orEmpty().filter { old -> cookies.none { it.name == old.name } }
                           cookieStore[url.host] = kept + cookies
                       }
-
                       override fun loadForRequest(url: HttpUrl): List<Cookie> {
+                          val saved = getSharedPreferences("spaces_v8", MODE_PRIVATE).getString("cookies", "") ?: ""
+                          val list = cookieStore[url.host].orEmpty().toMutableList()
+                          if (saved.isNotEmpty() && list.none { it.name == "sid" }) {
+                              for (cStr in saved.split(";")) {
+                                  val parts = cStr.trim().split("=", limit = 2)
+                                  if (parts.size == 2) {
+                                      val c = Cookie.Builder().domain(url.host).name(parts[0].trim()).value(parts[1].trim()).build()
+                                      list.add(c)
+                                  }
+                              }
+                          }
                           val now = System.currentTimeMillis()
-                          return cookieStore[url.host].orEmpty().filter { it.expiresAt > now && it.matches(url) }
+                          return list.filter { it.expiresAt > now && it.matches(url) }
                       }
                   })
                   .build()
@@ -832,8 +943,7 @@ jobs:
                   try {
                       val token = SessionToken(this, ComponentName(this, PlaybackService::class.java))
                       controllerFuture = MediaController.Builder(this, token).buildAsync()
-                  } catch (_: Exception) {
-                  }
+                  } catch (_: Exception) {}
 
                   val prefs = getSharedPreferences("spaces_v8", Context.MODE_PRIVATE)
                   baseHost = extractCleanHost(prefs.getString("host", "https://world84.spcs.bio") ?: "https://world84.spcs.bio")
@@ -842,6 +952,7 @@ jobs:
                   tvStatus = findViewById(R.id.tvStatus)
                   tvMirror = findViewById(R.id.tvMirror)
                   btnBackNav = findViewById(R.id.btnBackNav)
+                  btnLogin = findViewById(R.id.btnLogin)
                   btnEq = findViewById(R.id.btnEq)
                   btnSleep = findViewById(R.id.btnSleep)
                   etSearch = findViewById(R.id.etSearch)
@@ -912,7 +1023,6 @@ jobs:
                       override fun onIsPlayingChanged(isPlaying: Boolean) {
                           btnPlayPause.text = if (isPlaying) "⏸" else "▶"
                       }
-
                       override fun onPlaybackStateChanged(state: Int) {
                           if (state == Player.STATE_READY) {
                               seekBar.max = (player.duration / 1000).toInt().coerceAtLeast(1)
@@ -921,9 +1031,7 @@ jobs:
                               playNextTrack()
                           }
                       }
-
                       override fun onPlayerError(error: PlaybackException) {
-                          // Подписанные ссылки Spaces протухают: один раз пробуем получить свежую
                           val cur = currentPlayingItem
                           if (cur != null && !retriedOnce) {
                               retriedOnce = true
@@ -989,41 +1097,34 @@ jobs:
 
               private fun setupControls() {
                   tvMirror.setOnClickListener { showMirrorDialog() }
+                  btnLogin.setOnClickListener { loginLauncher.launch(Intent(this, LoginActivity::class.java).putExtra("host", baseHost)) }
                   btnEq.setOnClickListener { showEqualizerDialog() }
                   btnSleep.setOnClickListener { showSleepTimerDialog() }
                   btnBackNav.setOnClickListener { goBack() }
 
                   findViewById<Button>(R.id.btnSearch).setOnClickListener { doSearch() }
                   etSearch.setOnEditorActionListener { _, actionId, _ ->
-                      if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                          doSearch()
-                          true
-                      } else false
+                      if (actionId == EditorInfo.IME_ACTION_SEARCH) { doSearch(); true } else false
                   }
 
                   chipTop.setOnClickListener {
-                      highlightActiveChip(chipTop)
-                      navHistory.clear()
+                      highlightActiveChip(chipTop); navHistory.clear()
                       loadSection(topUrl, TabMode.TOP, "Топ-100", addToHistory = false)
                   }
                   chipArtists.setOnClickListener {
-                      highlightActiveChip(chipArtists)
-                      navHistory.clear()
+                      highlightActiveChip(chipArtists); navHistory.clear()
                       loadSection(artistsUrl, TabMode.ARTISTS, "Исполнители", addToHistory = false)
                   }
                   chipGenres.setOnClickListener {
-                      highlightActiveChip(chipGenres)
-                      navHistory.clear()
+                      highlightActiveChip(chipGenres); navHistory.clear()
                       loadSection(genresUrl, TabMode.GENRES, "Жанры", addToHistory = false)
                   }
                   chipFav.setOnClickListener {
-                      highlightActiveChip(chipFav)
-                      navHistory.clear()
+                      highlightActiveChip(chipFav); navHistory.clear()
                       showSavedList("favorites", "❤️ Любимые треки", TabMode.FAVORITES)
                   }
                   chipHist.setOnClickListener {
-                      highlightActiveChip(chipHist)
-                      navHistory.clear()
+                      highlightActiveChip(chipHist); navHistory.clear()
                       showSavedList("history", "🕒 История прослушивания", TabMode.HISTORY)
                   }
 
@@ -1048,11 +1149,7 @@ jobs:
                       override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
                           if (fromUser) tvCurrentTime.text = formatTime(progress * 1000L)
                       }
-
-                      override fun onStartTrackingTouch(sb: SeekBar?) {
-                          isUserSeeking = true
-                      }
-
+                      override fun onStartTrackingTouch(sb: SeekBar?) { isUserSeeking = true }
                       override fun onStopTrackingTouch(sb: SeekBar?) {
                           isUserSeeking = false
                           player.seekTo((sb?.progress ?: 0) * 1000L)
@@ -1069,8 +1166,7 @@ jobs:
                           Toast.makeText(this, "Режим: ${presets[which]}", Toast.LENGTH_SHORT).show()
                           dialog.dismiss()
                       }
-                      .setNegativeButton("Закрыть", null)
-                      .show()
+                      .setNegativeButton("Закрыть", null).show()
               }
 
               private fun showSleepTimerDialog() {
@@ -1086,22 +1182,13 @@ jobs:
                               Toast.makeText(this, "Таймер отключен", Toast.LENGTH_SHORT).show()
                           } else {
                               sleepTimer = object : CountDownTimer(m * 60 * 1000L, 60000L) {
-                                  override fun onTick(ms: Long) {
-                                      btnSleep.text = "🌙 ${(ms / 60000L) + 1}м"
-                                  }
-
-                                  override fun onFinish() {
-                                      player.pause()
-                                      btnSleep.text = "🌙"
-                                  }
+                                  override fun onTick(ms: Long) { btnSleep.text = "🌙 ${(ms / 60000L) + 1}м" }
+                                  override fun onFinish() { player.pause(); btnSleep.text = "🌙" }
                               }.start()
                               Toast.makeText(this, "Музыка выключится через $m мин.", Toast.LENGTH_SHORT).show()
                           }
-                      }
-                      .show()
+                      }.show()
               }
-
-              // ───────── Избранное и история (прямые mp3 НЕ сохраняем: ссылки подписаны и протухают) ─────────
 
               private fun getSavedTracks(key: String): ArrayList<SpaceItem> {
                   val prefs = getSharedPreferences("spaces_v8", Context.MODE_PRIVATE)
@@ -1113,8 +1200,7 @@ jobs:
                           val o = arr.getJSONObject(i)
                           list.add(SpaceItem(o.optString("idKey"), o.optString("title"), o.optString("subtitle"), o.optString("url"), false))
                       }
-                  } catch (_: Exception) {
-                  }
+                  } catch (_: Exception) {}
                   return list
               }
 
@@ -1136,15 +1222,8 @@ jobs:
               private fun toggleFavorite(item: SpaceItem): Boolean {
                   val favs = getSavedTracks("favorites")
                   val idx = favs.indexOfFirst { it.idKey == item.idKey }
-                  return if (idx >= 0) {
-                      favs.removeAt(idx)
-                      saveTracksList("favorites", favs)
-                      false
-                  } else {
-                      favs.add(0, item)
-                      saveTracksList("favorites", favs)
-                      true
-                  }
+                  return if (idx >= 0) { favs.removeAt(idx); saveTracksList("favorites", favs); false }
+                  else { favs.add(0, item); saveTracksList("favorites", favs); true }
               }
 
               private fun pushHistory(item: SpaceItem) {
@@ -1162,34 +1241,21 @@ jobs:
                   currentEntry = NavEntry("", mode, label)
                   updateMirrorBadge()
                   val saved = getSavedTracks(key)
-                  items.clear()
-                  seenKeys.clear()
+                  items.clear(); seenKeys.clear()
                   items.addAll(saved)
                   adapter.notifyDataSetChanged()
                   tvStatus.text = if (saved.isNotEmpty()) "$label (${saved.size})" else "$label: пусто"
               }
 
-              // ───────── Скачивание ─────────
-
               private fun downloadCurrentTrack() {
-                  val cur = currentPlayingItem
-                  if (cur == null) {
-                      Toast.makeText(this, "Сначала выберите трек", Toast.LENGTH_SHORT).show()
-                      return
-                  }
-                  if (Build.VERSION.SDK_INT <= 28 &&
-                      ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                  ) {
+                  val cur = currentPlayingItem ?: return Toast.makeText(this, "Сначала выберите трек", Toast.LENGTH_SHORT).show()
+                  if (Build.VERSION.SDK_INT <= 28 && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                       ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 101)
-                      Toast.makeText(this, "Разрешите доступ к памяти и нажмите ⬇ ещё раз", Toast.LENGTH_LONG).show()
                       return
                   }
                   uiScope.launch {
                       val mp3 = resolveStreamUrl(cur, forDownload = true)
-                      if (mp3.isEmpty()) {
-                          Toast.makeText(this@MainActivity, "Не удалось получить MP3", Toast.LENGTH_SHORT).show()
-                          return@launch
-                      }
+                      if (mp3.isEmpty()) return@launch Toast.makeText(this@MainActivity, "Не удалось получить MP3", Toast.LENGTH_SHORT).show()
                       try {
                           val name = "${cur.subtitle} - ${cur.title}".replace(Regex("[\\\\/:*?\"<>|]"), "_").take(90) + ".mp3"
                           val req = DownloadManager.Request(Uri.parse(mp3))
@@ -1207,10 +1273,7 @@ jobs:
               }
 
               private fun showMirrorDialog() {
-                  val input = EditText(this).apply {
-                      setText(baseHost)
-                      setPadding(40, 30, 40, 30)
-                  }
+                  val input = EditText(this).apply { setText(baseHost); setPadding(40, 30, 40, 30) }
                   AlertDialog.Builder(this)
                       .setTitle("Зеркало Spaces")
                       .setView(input)
@@ -1220,21 +1283,15 @@ jobs:
                               baseHost = extractCleanHost(raw)
                               liteChecked = false
                               getSharedPreferences("spaces_v8", Context.MODE_PRIVATE).edit().putString("host", baseHost).apply()
-                              navHistory.clear()
-                              updateMirrorBadge()
-                              highlightActiveChip(chipTop)
+                              navHistory.clear(); updateMirrorBadge()
                               loadSection(topUrl, TabMode.TOP, "Топ-100", addToHistory = false)
                           }
-                      }
-                      .setNegativeButton("Отмена", null)
-                      .show()
+                      }.setNegativeButton("Отмена", null).show()
               }
 
               private fun hideKeyboard() {
                   (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(etSearch.windowToken, 0)
               }
-
-              // ───────── Сеть ─────────
 
               private fun toAbsoluteUrl(path: String): String {
                   val clean = path.trim()
@@ -1251,7 +1308,7 @@ jobs:
               private fun httpGetHtml(full: String): Pair<String, String>? {
                   return try {
                       val req = Request.Builder().url(full)
-                          .header("User-Agent", "Mozilla/5.0 (compatible; SpacesPlayer/8.1)")
+                          .header("User-Agent", "Mozilla/5.0 (compatible; SpacesPlayer/8.2)")
                           .header("Accept-Language", "ru,en;q=0.8")
                           .header("Referer", "$baseHost/")
                           .build()
@@ -1260,12 +1317,9 @@ jobs:
                           val html = resp.body?.string() ?: return null
                           Pair(html, resp.request.url.toString())
                       }
-                  } catch (_: Exception) {
-                      null
-                  }
+                  } catch (_: Exception) { null }
               }
 
-              // Spaces отдаёт Lite-разметку (она и разбирается ниже). Если сайт вдруг отдал Mobile, один раз переключаем на Lite.
               private fun fetchDoc(urlOrPath: String): Document? {
                   val full = toAbsoluteUrl(urlOrPath)
                   var res = httpGetHtml(full) ?: return null
@@ -1290,9 +1344,7 @@ jobs:
                   isLoadingMore = false
                   loadedPages.clear()
                   val fullTarget = toAbsoluteUrl(urlOrPath)
-                  if (addToHistory && currentEntry.url != fullTarget) {
-                      navHistory.push(currentEntry)
-                  }
+                  if (addToHistory && currentEntry.url != fullTarget) navHistory.push(currentEntry)
                   currentEntry = NavEntry(fullTarget, mode, title)
                   updateMirrorBadge()
 
@@ -1302,11 +1354,11 @@ jobs:
                   loadJob = uiScope.launch {
                       val doc = withContext(Dispatchers.IO) {
                           var d = fetchDoc(fullTarget)
-                          // На страницах жанра/исполнителя показан только превью: идём в полный список «Все → /tracks/»
-                          if (d != null && mode == TabMode.FOLDER_VIEW && !pathOf(fullTarget).endsWith("/tracks/")) {
+                          val p = pathOf(fullTarget)
+                          if (d != null && mode == TabMode.FOLDER_VIEW && !p.endsWith("/tracks/") && !p.endsWith("/files/")) {
                               val all = d.select("a[href]").map { it.absUrl("href") }.firstOrNull {
-                                  val p = pathOf(it)
-                                  p.startsWith("/music-online/") && p.endsWith("/tracks/")
+                                  val ap = pathOf(it)
+                                  ap.startsWith("/music-online/") && (ap.endsWith("/tracks/") || ap.endsWith("/files/"))
                               }
                               if (all != null) d = fetchDoc(all) ?: d
                           }
@@ -1316,20 +1368,18 @@ jobs:
                       updateMirrorBadge()
 
                       if (doc != null) {
-                          nextPageUrl = findNextPageUrl(doc)
+                          nextPageUrl = findNextPageUrl(doc, mode)
                           val parsed = parseList(doc, mode)
-                          items.clear()
-                          seenKeys.clear()
-                          for (i in parsed) {
-                              if (seenKeys.add(i.idKey)) items.add(i)
-                          }
+                          items.clear(); seenKeys.clear()
+                          for (i in parsed) if (seenKeys.add(i.idKey)) items.add(i)
                           adapter.notifyDataSetChanged()
                           rvTracks.scrollToPosition(0)
                           val tracks = items.count { !it.isFolder }
                           val folders = items.count { it.isFolder }
                           tvStatus.text = when {
+                              tracks > 0 && folders > 0 -> "$title • Разделов: $folders, Треков: $tracks"
                               tracks > 0 -> "$title • Треков: $tracks"
-                              folders > 0 -> "$title • Элементов: $folders"
+                              folders > 0 -> "$title • Разделов: $folders"
                               else -> "$title • Ничего не найдено"
                           }
                       } else {
@@ -1340,10 +1390,7 @@ jobs:
 
               private fun loadNextPage() {
                   val next = nextPageUrl ?: return
-                  if (!loadedPages.add(next)) {
-                      nextPageUrl = null
-                      return
-                  }
+                  if (!loadedPages.add(next)) { nextPageUrl = null; return }
                   isLoadingMore = true
                   progressBar.visibility = View.VISIBLE
                   val mode = currentEntry.tabMode
@@ -1352,33 +1399,34 @@ jobs:
                           val doc = withContext(Dispatchers.IO) { fetchDoc(next) }
                           progressBar.visibility = View.GONE
                           if (doc != null) {
-                              nextPageUrl = findNextPageUrl(doc)
+                              nextPageUrl = findNextPageUrl(doc, mode)
                               var added = 0
                               for (m in parseList(doc, mode)) {
-                                  if (seenKeys.add(m.idKey)) {
-                                      items.add(m)
-                                      added++
-                                  }
+                                  if (seenKeys.add(m.idKey)) { items.add(m); added++ }
                               }
                               if (added > 0) adapter.notifyDataSetChanged()
-                          } else {
-                              nextPageUrl = null
-                          }
-                      } finally {
-                          isLoadingMore = false
-                      }
+                          } else { nextPageUrl = null }
+                      } finally { isLoadingMore = false }
                   }
               }
 
-              // ───────── Парсер Spaces «Музыка онлайн» ─────────
-
               private fun parseList(doc: Document, mode: TabMode): List<SpaceItem> {
                   return when (mode) {
-                      TabMode.ARTISTS -> parseFolders(doc, artistRe, "Исполнитель")
-                      TabMode.GENRES -> parseFolders(doc, tagRe, "Жанр")
+                      TabMode.ARTISTS -> parseFolders(doc, artistRe, "🎤 Исполнитель")
+                      TabMode.GENRES -> parseFolders(doc, tagRe, "🎼 Жанр")
+                      TabMode.SEARCH -> {
+                          val out = ArrayList<SpaceItem>()
+                          if (loadedPages.isEmpty()) {
+                              out.addAll(parseFolders(doc, artistRe, "🎤 Исполнитель"))
+                              out.addAll(parseFolders(doc, albumRe, "💿 Альбом"))
+                          }
+                          out.addAll(parseTracks(doc))
+                          out
+                      }
                       else -> {
                           val tracks = parseTracks(doc)
-                          if (tracks.isNotEmpty()) tracks else parseFolders(doc, artistRe, "Исполнитель")
+                          if (tracks.isNotEmpty()) tracks
+                          else parseFolders(doc, albumRe, "💿 Альбом").ifEmpty { parseFolders(doc, artistRe, "🎤 Исполнитель") }
                       }
                   }
               }
@@ -1407,7 +1455,6 @@ jobs:
                   return out
               }
 
-              // В списке исполнитель стоит текстом перед ссылкой: «Исполнитель: <a>Название</a>»
               private fun artistBefore(a: Element): String {
                   var node: Element? = a
                   var depth = 0
@@ -1425,12 +1472,7 @@ jobs:
                           }
                           n = n.previousSibling()
                       }
-                      val s = sb.toString()
-                          .replace(Regex("""^\s*\d+\s*[.)]\s*"""), "")
-                          .replace(Regex("""\s+"""), " ")
-                          .trim()
-                          .trimEnd(':')
-                          .trim()
+                      val s = sb.toString().replace(Regex("""^\s*\d+\s*[.)]\s*"""), "").replace(Regex("""\s+"""), " ").trim().trimEnd(':').trim()
                       if (hasLetters(s)) return s
                       node = node.parent()
                       depth++
@@ -1438,16 +1480,13 @@ jobs:
                   return ""
               }
 
-              // Прямая mp3-ссылка бывает прямо в строке списка (иконка ⬇). Берём её, только если строка содержит один трек.
               private fun rowMp3(a: Element, fileId: String): String {
                   var node: Element? = a.parent()
                   var depth = 0
                   while (node != null && depth < 4) {
                       val distinct = node.select(trackSelector).map { it.attr("href") }.toSet().size
                       if (distinct > 1) break
-                      val link = node.select("a[href*='.mp3']").firstOrNull {
-                          fileId.isEmpty() || it.attr("href").contains("/$fileId/")
-                      }
+                      val link = node.select("a[href*='.mp3']").firstOrNull { fileId.isEmpty() || it.attr("href").contains("/$fileId/") }
                       if (link != null) return link.absUrl("href")
                       node = node.parent()
                       depth++
@@ -1474,15 +1513,28 @@ jobs:
               }
 
               private fun hasLetters(s: String) = Regex("""[\p{L}\d]""").containsMatchIn(s)
-
               private fun isGenericWord(t: String) = t.lowercase().trim() in setOf("скачать", "слушать", "играть", "файл", "mp3", "все", "показать все")
 
-              private fun findNextPageUrl(doc: Document): String? {
+              private fun findNextPageUrl(doc: Document, mode: TabMode = currentEntry.tabMode): String? {
                   for (a in doc.select("a[href]")) {
                       val t = a.text().lowercase().replace('ё', 'е').trim()
                       if (t.contains("вперед") || t == "»" || t == ">") {
                           val h = a.absUrl("href")
                           if (h.isNotEmpty() && h != currentEntry.url && !loadedPages.contains(h)) return h
+                      }
+                  }
+                  if (mode == TabMode.SEARCH) {
+                      for (a in doc.select("a[href]")) {
+                          val h = a.absUrl("href")
+                          val p = pathOf(h)
+                          val t = a.text().lowercase()
+                          if (p.contains("/music-online/search/") &&
+                              (p.contains("track") || p.contains("file") || t.contains("все треки") || t.contains("все песни") || t.startsWith("все ")) &&
+                              !p.contains("artist") && !p.contains("album") &&
+                              h != currentEntry.url && !loadedPages.contains(h)
+                          ) {
+                              return h
+                          }
                       }
                   }
                   return null
@@ -1492,21 +1544,16 @@ jobs:
                   if (pos !in items.indices) return
                   val item = items[pos]
                   if (item.isFolder) {
-                      val mode = TabMode.FOLDER_VIEW
-                      loadSection(item.url, mode, item.title, addToHistory = true)
+                      loadSection(item.url, TabMode.FOLDER_VIEW, item.title, addToHistory = true)
                   } else {
                       retriedOnce = false
                       startPlayback(item, fresh = false)
                   }
               }
 
-              // ───────── Получение прямой ссылки на mp3 ─────────
-
               private fun pickMp3(doc: Document, id: String, best: Boolean): String {
-                  val links = doc.select("a[href*='.mp3']").map { it.absUrl("href") }
-                      .filter { it.isNotEmpty() && (id.isEmpty() || it.contains("/$id/")) }
+                  val links = doc.select("a[href*='.mp3']").map { it.absUrl("href") }.filter { it.isNotEmpty() && (id.isEmpty() || it.contains("/$id/")) }
                   if (links.isEmpty()) return ""
-                  // Сегмент после id: 0 = оригинал (320 кбит), 192/128/64/32 = битрейт
                   val order = if (best) listOf("0", "192", "128", "64", "32") else listOf("192", "128", "0", "64", "32")
                   if (id.isNotEmpty()) {
                       for (q in order) {
@@ -1523,7 +1570,6 @@ jobs:
                       var doc = fetchDoc(item.url) ?: return@withContext item.directMp3
                       var id = viewRe.find(pathOf(item.url))?.groupValues?.get(1) ?: ""
                       if (id.isEmpty()) {
-                          // Страница каталога: переходим на страницу файла /music/view/ID/
                           val v = doc.select("a[href*='/music/view/']").firstOrNull()
                           if (v != null) {
                               val vu = v.absUrl("href")
@@ -1663,5 +1709,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SpacesPlayer-v8.1-APK
+          name: SpacesPlayer-v8.2-APK
           path: app/build/outputs/apk/debug/*.apk
