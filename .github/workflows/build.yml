@@ -14,19 +14,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle 8.5
+      - name: Setup Gradle 8.9
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: '8.5'
+          gradle-version: '8.9'
 
-      - name: Generate Spaces Player v9 FullSearch
+      - name: Generate Spaces Player v10
         run: |
           rm -rf app/src/main
           mkdir -p app/src/main/java/com/example/spacesplayer
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
 
-          # 1. settings.gradle.kts
+          # 1. settings.gradle.kts (ИСПРАВЛЕНО: добавлен mavenCentral и явный репозиторий)
           cat << 'EOF' > settings.gradle.kts
           pluginManagement {
               repositories {
@@ -40,17 +40,18 @@ jobs:
               repositories {
                   google()
                   mavenCentral()
+                  maven { url = uri("https://repo1.maven.org/maven2") }
               }
           }
           rootProject.name = "SpacesPlayer"
           include(":app")
           EOF
 
-          # 2. build.gradle.kts
+          # 2. build.gradle.kts (Обновлено до AGP 8.7.3 и Kotlin 2.0.21)
           cat << 'EOF' > build.gradle.kts
           plugins {
-              id("com.android.application") version "8.2.2" apply false
-              id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+              id("com.android.application") version "8.7.3" apply false
+              id("org.jetbrains.kotlin.android") version "2.0.21" apply false
           }
           EOF
 
@@ -58,9 +59,11 @@ jobs:
           cat << 'EOF' > gradle.properties
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           android.useAndroidX=true
+          android.enableJetifier=true
+          kotlin.code.style=official
           EOF
 
-          # 4. app/build.gradle.kts
+          # 4. app/build.gradle.kts (Обновлены compileSdk, targetSdk и все зависимости)
           cat << 'EOF' > app/build.gradle.kts
           plugins {
               id("com.android.application")
@@ -68,13 +71,13 @@ jobs:
           }
           android {
               namespace = "com.example.spacesplayer"
-              compileSdk = 34
+              compileSdk = 35
               defaultConfig {
                   applicationId = "com.example.spacesplayer"
                   minSdk = 24
-                  targetSdk = 34
-                  versionCode = 9
-                  versionName = "9.0-FullSearch"
+                  targetSdk = 35
+                  versionCode = 10
+                  versionName = "10.0-Modern"
               }
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
@@ -85,17 +88,17 @@ jobs:
               }
           }
           dependencies {
-              implementation("androidx.core:core-ktx:1.12.0")
-              implementation("androidx.appcompat:appcompat:1.6.1")
-              implementation("com.google.android.material:material:1.11.0")
+              implementation("androidx.core:core-ktx:1.15.0")
+              implementation("androidx.appcompat:appcompat:1.7.0")
+              implementation("com.google.android.material:material:1.12.0")
               implementation("androidx.recyclerview:recyclerview:1.3.2")
-              implementation("androidx.media3:media3-exoplayer:1.2.1")
-              implementation("androidx.media3:media3-session:1.2.1")
-              implementation("androidx.media3:media3-ui:1.2.1")
-              implementation("org.json:json:20231013")
+              implementation("androidx.media3:media3-exoplayer:1.5.1")
+              implementation("androidx.media3:media3-session:1.5.1")
+              implementation("androidx.media3:media3-ui:1.5.1")
+              implementation("org.json:json:20240303")
               implementation("com.squareup.okhttp3:okhttp:4.12.0")
-              implementation("org.jsoup:jsoup:1.17.2")
-              implementation("org.jetbrains.kotlin:kotlinx-coroutines-android:1.7.3")
+              implementation("org.jsoup:jsoup:1.18.3")
+              implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
           }
           EOF
 
@@ -448,7 +451,7 @@ jobs:
                               android:id="@+id/tvNowPlayingSub"
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
-                              android:text="Spaces Музыка v9"
+                              android:text="Spaces Музыка v10"
                               android:textColor="#8E8E93"
                               android:textSize="11sp"
                               android:singleLine="true"/>
@@ -649,7 +652,7 @@ jobs:
           }
           EOF
 
-          # 10. MainActivity.kt (v9.0 FullSearch Engine)
+          # 10. MainActivity.kt (v10.0 Modern Engine)
           cat << 'EOF' > app/src/main/java/com/example/spacesplayer/MainActivity.kt
           package com.example.spacesplayer
 
@@ -801,7 +804,7 @@ jobs:
                       startService(Intent(this, PlaybackService::class.java))
                   } catch (_: Exception) {}
 
-                  val prefs = getSharedPreferences("spaces_v9", Context.MODE_PRIVATE)
+                  val prefs = getSharedPreferences("spaces_v10", Context.MODE_PRIVATE)
                   baseHost = extractCleanHost(prefs.getString("host", "https://world84.spcs.bio") ?: "https://world84.spcs.bio")
 
                   rvTracks = findViewById(R.id.rvTracks)
@@ -1147,7 +1150,7 @@ jobs:
               }
 
               private fun getSavedTracks(key: String): ArrayList<SpaceItem> {
-                  val prefs = getSharedPreferences("spaces_v9", Context.MODE_PRIVATE)
+                  val prefs = getSharedPreferences("spaces_v10", Context.MODE_PRIVATE)
                   val raw = prefs.getString(key, "[]") ?: "[]"
                   val list = ArrayList<SpaceItem>()
                   try {
@@ -1181,7 +1184,7 @@ jobs:
                       o.put("directMp3", item.directMp3)
                       arr.put(o)
                   }
-                  getSharedPreferences("spaces_v9", Context.MODE_PRIVATE)
+                  getSharedPreferences("spaces_v10", Context.MODE_PRIVATE)
                       .edit().putString(key, arr.toString()).apply()
               }
 
@@ -1254,7 +1257,7 @@ jobs:
                           val raw = input.text.toString().trim()
                           if (raw.isNotEmpty()) {
                               baseHost = extractCleanHost(raw)
-                              getSharedPreferences("spaces_v9", Context.MODE_PRIVATE).edit().putString("host", baseHost).apply()
+                              getSharedPreferences("spaces_v10", Context.MODE_PRIVATE).edit().putString("host", baseHost).apply()
                               navHistory.clear(); updateMirrorBadge()
                               loadSection(onlineRootUrl, TabMode.ONLINE, "Музыка онлайн", addToHistory = false)
                           }
@@ -1350,7 +1353,7 @@ jobs:
                   }
               }
 
-              // УНИВЕРСАЛЬНЫЙ ПАРСЕР v9.0 (Треки, Альбомы, Исполнители)
+              // УНИВЕРСАЛЬНЫЙ ПАРСЕР v10.0 (Треки, Альбомы, Исполнители)
               private fun parseMusicOnlineDoc(doc: Document, mode: TabMode): List<SpaceItem> {
                   val result = ArrayList<SpaceItem>()
                   val seen = HashSet<String>()
@@ -1628,5 +1631,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SpacesPlayer-v9-FullSearch-APK
+          name: SpacesPlayer-v10-Modern-APK
           path: app/build/outputs/apk/debug/*.apk
