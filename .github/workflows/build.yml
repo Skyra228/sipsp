@@ -19,7 +19,7 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Spaces Player v12.0
+      - name: Generate Spaces Player v13.0
         run: |
           rm -rf app/src/main
           mkdir -p app/src/main/java/com/example/spacesplayer
@@ -70,8 +70,8 @@ jobs:
                   applicationId = "com.example.spacesplayer"
                   minSdk = 24
                   targetSdk = 34
-                  versionCode = 12
-                  versionName = "12.0"
+                  versionCode = 13
+                  versionName = "13.0"
               }
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
@@ -442,7 +442,7 @@ jobs:
                               android:id="@+id/tvNowPlayingSub"
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
-                              android:text="Spaces Музыка v12"
+                              android:text="Spaces Музыка v13"
                               android:textColor="#8E8E93"
                               android:textSize="11sp"
                               android:singleLine="true"/>
@@ -691,7 +691,7 @@ jobs:
           import java.util.concurrent.ConcurrentHashMap
           import java.util.concurrent.TimeUnit
 
-          enum class ItemType { TRACK, ALBUM, ARTIST, FOLDER }
+          enum class ItemType { TRACK, ALBUM, ARTIST, GENRE, FOLDER }
 
           data class SpaceItem(
               val idKey: String,
@@ -799,7 +799,7 @@ jobs:
                       startService(Intent(this, PlaybackService::class.java))
                   } catch (_: Exception) {}
 
-                  val prefs = getSharedPreferences("spaces_v12", Context.MODE_PRIVATE)
+                  val prefs = getSharedPreferences("spaces_v13", Context.MODE_PRIVATE)
                   baseHost = extractCleanHost(prefs.getString("host", "https://world84.spcs.bio") ?: "https://world84.spcs.bio")
 
                   rvTracks = findViewById(R.id.rvTracks)
@@ -1131,7 +1131,7 @@ jobs:
               }
 
               private fun getSavedTracks(key: String): ArrayList<SpaceItem> {
-                  val prefs = getSharedPreferences("spaces_v12", Context.MODE_PRIVATE)
+                  val prefs = getSharedPreferences("spaces_v13", Context.MODE_PRIVATE)
                   val raw = prefs.getString(key, "[]") ?: "[]"
                   val list = ArrayList<SpaceItem>()
                   try {
@@ -1165,7 +1165,7 @@ jobs:
                       o.put("directMp3", item.directMp3)
                       arr.put(o)
                   }
-                  getSharedPreferences("spaces_v12", Context.MODE_PRIVATE)
+                  getSharedPreferences("spaces_v13", Context.MODE_PRIVATE)
                       .edit().putString(key, arr.toString()).apply()
               }
 
@@ -1238,7 +1238,7 @@ jobs:
                           val raw = input.text.toString().trim()
                           if (raw.isNotEmpty()) {
                               baseHost = extractCleanHost(raw)
-                              getSharedPreferences("spaces_v12", Context.MODE_PRIVATE).edit().putString("host", baseHost).apply()
+                              getSharedPreferences("spaces_v13", Context.MODE_PRIVATE).edit().putString("host", baseHost).apply()
                               navHistory.clear(); updateMirrorBadge()
                               loadSection(onlineRootUrl, TabMode.ONLINE, "Музыка онлайн", addToHistory = false)
                           }
@@ -1298,7 +1298,7 @@ jobs:
 
                       if (doc != null) {
                           nextPageUrl = findNextPageUrl(doc)
-                          val parsed = parseMusicOnlineDoc(doc, mode)
+                          val parsed = parseMusicOnlineDoc(doc, mode, fullTarget)
                           items.clear(); seenKeys.clear()
                           for (i in parsed) {
                               if (seenKeys.add(i.idKey)) items.add(i)
@@ -1327,7 +1327,7 @@ jobs:
                       isLoadingMore = false
                       if (doc != null) {
                           nextPageUrl = findNextPageUrl(doc)
-                          val more = parseMusicOnlineDoc(doc, currentEntry.tabMode)
+                          val more = parseMusicOnlineDoc(doc, currentEntry.tabMode, next)
                           var added = 0
                           for (m in more) {
                               if (seenKeys.add(m.idKey)) { items.add(m); added++ }
@@ -1349,86 +1349,123 @@ jobs:
                       "показать ещё", "показать еще", "поделиться", "жалоба",
                       "о сайте", "контакты", "зо", "зона обмена", "первый раз на spaces?",
                       "тема", "версия", "mobile", "lite", "touch", "pc",
-                      "отключить рекламу", "реклама", "1 из 9", "1 из"
+                      "отключить рекламу", "реклама", "список пуст.",
+                      "по алфавиту", "выбранные жанры:", "доступные жанры:",
+                      "популярные", "топ-100"
                   )
                   if (low in noise) return true
-                  if (low.startsWith("танки")) return true
+                  if (low.startsWith("танки") || low.startsWith("битва") || low.startsWith("мафия") || low.startsWith("лорикс") || low.startsWith("мстители") || low.startsWith("зоопарк") || low.startsWith("доценты") || low.startsWith("небоскреб") || low.startsWith("разрушители")) return true
+                  if (low.contains("кб/с") && low.length < 10) return true
                   return false
               }
 
-              private fun parseMusicOnlineDoc(doc: Document, mode: TabMode): List<SpaceItem> {
+              private fun parseMusicOnlineDoc(doc: Document, mode: TabMode, currentUrl: String): List<SpaceItem> {
                   val result = ArrayList<SpaceItem>()
                   val seen = HashSet<String>()
 
-                  // 1. Треки — из любого div.__adv_list_track (мобильная и десктопная разметка)
-                  for (container in doc.select("div.__adv_list_track")) {
-                      // Ссылка на трек
-                      val trackLink = container.selectFirst("a[href*=/music/view/], a[href*=/music-online/track/]")
-                          ?: continue
-                      val trackUrl = trackLink.absUrl("href")
-                      val title = trackLink.text().trim()
-                      if (title.isEmpty() || isNoiseText(title)) continue
+                  val path = try {
+                      Uri.parse(currentUrl).path ?: ""
+                  } catch (_: Exception) { "" }.trimEnd('/')
 
-                      // MP3 — сначала из <a href="*.mp3"> (мобильная версия)
-                      var mp3 = ""
-                      val mp3Link = container.selectFirst("a[href*=.mp3], a[href*=/files/download/], a[href*=/music/download/]")
-                      if (mp3Link != null) {
-                          mp3 = mp3Link.absUrl("href")
-                      }
-                      // MP3 — потом из data-src (десктопная версия)
-                      if (mp3.isEmpty()) {
-                          val playerEl = container.selectFirst("div.player_item")
-                          mp3 = playerEl?.attr("data-src")?.trim() ?: ""
-                      }
+                  val isArtistsListPage = path == "/music-online/artists" || Regex(""".*/music-online/artists/p\d+""").matches(path)
+                  val isGenresListPage = path == "/music-online/genres" || Regex(""".*/music-online/genres/p\d+""").matches(path)
+                  val isArtistPage = Regex(""".*/music-online/artist/[^/]+""").matches(path)
+                  val isAlbumPage = Regex(""".*/music-online/album/[^/]+/[^/]+""").matches(path)
+                  val isTagPage = path.startsWith("/music-online/search/by_tag/")
 
-                      // Артист — сначала из data-artist (десктоп), потом из ownText div.oh (мобильный)
-                      var artist = ""
-                      val playerEl = container.selectFirst("div.player_item")
-                      if (playerEl != null) {
-                          artist = playerEl.attr("data-artist").trim()
+                  var pageArtistName = ""
+                  if (isArtistPage) {
+                      pageArtistName = doc.selectFirst("h1.header.upcs.b, h1.upcs.b, h1.header")?.text()?.trim() ?: ""
+                  } else if (isAlbumPage) {
+                      val artistLink = doc.selectFirst("div#header_path a[href*=/music-online/artist/]")
+                      if (artistLink != null) {
+                          pageArtistName = artistLink.selectFirst("span[itemprop=name]")?.text()?.trim()
+                              ?: artistLink.text().trim()
                       }
-                      if (artist.isEmpty()) {
+                  }
+
+                  // 1. Треки — на всех страницах, кроме списка артистов и списка жанров
+                  if (!isArtistsListPage && !isGenresListPage) {
+                      for (container in doc.select("div.__adv_list_track")) {
+                          val trackLink = container.selectFirst("div.oh a[href*=/music/]")
+                              ?: container.selectFirst("a[href*=/music/view/]")
+                              ?: container.selectFirst("a[href*=/music-online/track/]")
+                              ?: continue
+                          val trackUrl = trackLink.absUrl("href")
+                          val title = trackLink.text().trim()
+                          if (title.isEmpty() || isNoiseText(title)) continue
+
+                          var mp3 = ""
+                          val mp3Link = container.selectFirst("a[href*=.mp3], a[href*=/files/download/], a[href*=/music/download/]")
+                          if (mp3Link != null) mp3 = mp3Link.absUrl("href")
+
+                          var artist = ""
                           val ohDiv = container.selectFirst("div.oh")
                           if (ohDiv != null) {
                               artist = ohDiv.ownText().trim().trimEnd(':').trim()
                           }
-                      }
-                      if (artist.isEmpty()) artist = "Музыка онлайн"
+                          if (artist.isEmpty() && pageArtistName.isNotEmpty()) {
+                              artist = pageArtistName
+                          }
+                          if (artist.isEmpty()) artist = "Музыка онлайн"
 
-                      val id = extractId(trackUrl)
-                      if (!seen.add("track_$id")) continue
+                          val id = extractId(trackUrl)
+                          if (!seen.add("track_$id")) continue
 
-                      result.add(
-                          SpaceItem(
-                              idKey = "track_$id",
-                              title = title,
-                              subtitle = artist,
-                              url = trackUrl,
-                              isFolder = false,
-                              directMp3 = mp3,
-                              type = ItemType.TRACK
+                          result.add(
+                              SpaceItem(
+                                  idKey = "track_$id",
+                                  title = title,
+                                  subtitle = artist,
+                                  url = trackUrl,
+                                  isFolder = false,
+                                  directMp3 = mp3,
+                                  type = ItemType.TRACK
+                              )
                           )
-                      )
+                      }
                   }
 
-                  // 2. Артисты и альбомы — только в режимах SEARCH/ARTISTS/GENRES
-                  if (mode == TabMode.SEARCH || mode == TabMode.ARTISTS || mode == TabMode.GENRES || result.isEmpty()) {
-                      for (a in doc.select("a[href*=/music-online/artist/]")) {
+                  // 2. Артисты — на страницах поиска, тегов, списка артистов
+                  if (isArtistsListPage || isTagPage || mode == TabMode.SEARCH || (result.isEmpty() && !isGenresListPage && !isAlbumPage)) {
+                      for (a in doc.select("div.pre_content_wrap a[href*=/music-online/artist/]")) {
                           val url = a.absUrl("href")
-                          val text = a.text().trim()
+                          val b = a.selectFirst("b")
+                          val text = b?.text()?.trim() ?: a.text().trim()
                           if (text.isEmpty() || isNoiseText(text)) continue
                           val id = extractId(url)
                           if (seen.add("artist_$id")) {
                               result.add(SpaceItem("artist_$id", text, "Исполнитель", url, true, type = ItemType.ARTIST))
                           }
                       }
-                      for (a in doc.select("a[href*=/music-online/album/]")) {
+                  }
+
+                  // 3. Альбомы — на страницах поиска, тегов, альбома, альбомов артиста
+                  if (isTagPage || isAlbumPage || mode == TabMode.SEARCH || (result.isEmpty() && !isGenresListPage && !isArtistsListPage)) {
+                      for (a in doc.select("div.pre_content_wrap a[href*=/music-online/album/]")) {
                           val url = a.absUrl("href")
-                          val text = a.text().trim()
-                          if (text.isEmpty() || isNoiseText(text)) continue
+                          val b = a.selectFirst("b")
+                          val fullText = a.text().trim()
+                          val albumTitle = b?.text()?.trim() ?: fullText
+                          if (albumTitle.isEmpty() || isNoiseText(albumTitle)) continue
+                          val artistPrefix = if (fullText.contains(":")) fullText.substringBefore(":").trim() else ""
+                          val subtitle = if (artistPrefix.isNotEmpty()) artistPrefix else "Альбом"
                           val id = extractId(url)
                           if (seen.add("album_$id")) {
-                              result.add(SpaceItem("album_$id", text, "Альбом", url, true, type = ItemType.ALBUM))
+                              result.add(SpaceItem("album_$id", albumTitle, subtitle, url, true, type = ItemType.ALBUM))
+                          }
+                      }
+                  }
+
+                  // 4. Жанры — только на странице /music-online/genres/
+                  if (isGenresListPage) {
+                      for (a in doc.select("a[href*=/music-online/search/by_tag/]")) {
+                          val url = a.absUrl("href")
+                          val text = a.selectFirst("span")?.text()?.trim() ?: a.text().trim()
+                          if (text.isEmpty() || isNoiseText(text)) continue
+                          val id = extractId(url)
+                          if (seen.add("genre_$id")) {
+                              result.add(SpaceItem("genre_$id", text, "Жанр", url, true, type = ItemType.GENRE))
                           }
                       }
                   }
@@ -1459,7 +1496,7 @@ jobs:
                                   if (!resp.isSuccessful) return@withContext emptyList<SpaceItem>()
                                   val html = resp.body?.string() ?: return@withContext emptyList<SpaceItem>()
                                   val doc = Jsoup.parse(html, resp.request.url.toString())
-                                  parseMusicOnlineDoc(doc, TabMode.SEARCH)
+                                  parseMusicOnlineDoc(doc, TabMode.SEARCH, resp.request.url.toString())
                               }
                           } catch (_: Exception) {
                               emptyList<SpaceItem>()
@@ -1481,13 +1518,18 @@ jobs:
               private fun extractId(url: String): String {
                   val m = Regex("""/(?:view|download|file|track)/[^/?#]*?(\d{4,})""").find(url)?.groupValues?.get(1)
                   if (m != null) return m
+                  val mTag = Regex("""/music-online/search/by_tag/([a-z0-9-]+-\d+)""").find(url)?.groupValues?.get(1)
+                  if (mTag != null) return mTag
+                  val m2 = Regex("""/music-online/album/[^/]+/([a-z0-9-]+-\d+)""").find(url)?.groupValues?.get(1)
+                  if (m2 != null) return m2
+                  val m3 = Regex("""/music-online/artist/([a-z0-9-]+-\d+)""").find(url)?.groupValues?.get(1)
+                  if (m3 != null) return m3
                   val p = Regex("""(?:(?:file_id|fid|id|link_id)=(\d{4,}))""").find(url)?.groupValues?.get(1)
                   if (p != null) return p
                   return url.substringBefore("?").substringBefore("#")
               }
 
               private fun findNextPageUrl(doc: Document): String? {
-                  // Мобильная версия: div.pgar a с текстом "Вперёд"
                   for (a in doc.select("div.pgar a")) {
                       val t = a.text().lowercase()
                       if (t.contains("вперёд") || t.contains("вперед") || t == ">") {
@@ -1495,7 +1537,6 @@ jobs:
                           if (h.isNotEmpty()) return h
                       }
                   }
-                  // Десктопная версия
                   val desktopNext = doc.selectFirst("a.pgn__link_next:not(.pgn__link_disabled)")
                   return desktopNext?.absUrl("href")?.takeIf { it.isNotEmpty() }
               }
@@ -1508,6 +1549,7 @@ jobs:
                       val nextMode = when (item.type) {
                           ItemType.ARTIST -> TabMode.ARTISTS
                           ItemType.ALBUM -> TabMode.FOLDER_VIEW
+                          ItemType.GENRE -> TabMode.FOLDER_VIEW
                           else -> TabMode.FOLDER_VIEW
                       }
                       loadSection(item.url, nextMode, item.title, addToHistory = true)
@@ -1518,13 +1560,13 @@ jobs:
 
               private suspend fun resolveStreamUrl(item: SpaceItem): String {
                   if (item.directMp3.isNotEmpty()) return item.directMp3
-                  // Fallback: идём на страницу трека и ищем mp3
+
                   val doc = withContext(Dispatchers.IO) { fetchDocFast(item.url) }
                   if (doc != null) {
                       val mp3Link = doc.selectFirst("a[href*=.mp3], a[href*=/files/download/], a[href*=/music/download/]")
                       if (mp3Link != null) {
                           val src = mp3Link.absUrl("href")
-                          if (src.isNotEmpty()) { item.directMp3 = src; return src }
+                          if (src.isNotEmpty() && isDirectAudioFileUrl(src)) { item.directMp3 = src; return src }
                       }
                       val audio = doc.selectFirst("audio[src], audio source[src], [data-src*=.mp3]")
                       if (audio != null) {
@@ -1532,7 +1574,18 @@ jobs:
                           if (src.isNotEmpty()) { item.directMp3 = src; return src }
                       }
                   }
-                  return ""
+
+                  val web = withTimeoutOrNull(12000L) {
+                      val deferred = CompletableDeferred<String>()
+                      runOnUiThread {
+                          webViewMp3Callback = { found -> if (!deferred.isCompleted) deferred.complete(found) }
+                          hiddenWebView.loadUrl(item.url)
+                      }
+                      deferred.await()
+                  } ?: ""
+
+                  if (web.isNotEmpty()) item.directMp3 = web
+                  return web
               }
 
               private fun playTrackAt(index: Int) {
@@ -1630,6 +1683,7 @@ jobs:
                           holder.tvCover.text = when (item.type) {
                               ItemType.ARTIST -> "👤"
                               ItemType.ALBUM -> "💿"
+                              ItemType.GENRE -> "🏷"
                               else -> "📁"
                           }
                           holder.tvTitle.setTextColor(0xFFFFFFFF.toInt())
@@ -1657,5 +1711,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SpacesPlayer-v12.0-APK
+          name: SpacesPlayer-v13.0-APK
           path: app/build/outputs/apk/debug/*.apk
