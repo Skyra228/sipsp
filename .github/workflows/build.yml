@@ -25,6 +25,7 @@ jobs:
           mkdir -p app/src/main/java/com/example/spacesplayer
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
+          mkdir -p app/src/main/res/values
 
           cat << 'EOF' > settings.gradle.kts
           pluginManagement {
@@ -96,10 +97,25 @@ jobs:
           }
           EOF
 
+          cat << 'EOF' > app/src/main/res/values/themes.xml
+          <resources>
+              <style name="AppThemeDark" parent="Theme.Material3.Dark.NoActionBar">
+                  <item name="android:windowBackground">#0A0A0A</item>
+                  <item name="colorSurface">#18181A</item>
+                  <item name="colorOnSurface">#FFFFFF</item>
+              </style>
+              <style name="AppThemeLight" parent="Theme.Material3.Light.NoActionBar">
+                  <item name="android:windowBackground">#F2F2F7</item>
+                  <item name="colorSurface">#FFFFFF</item>
+                  <item name="colorOnSurface">#000000</item>
+              </style>
+          </resources>
+          EOF
+
           cat << 'EOF' > app/src/main/res/drawable/bg_search.xml
           <?xml version="1.0" encoding="utf-8"?>
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
-              <solid android:color="#1C1C1E"/>
+              <solid android:color="?attr/colorSurface"/>
               <corners android:radius="14dp"/>
           </shape>
           EOF
@@ -107,7 +123,7 @@ jobs:
           cat << 'EOF' > app/src/main/res/drawable/bg_chip.xml
           <?xml version="1.0" encoding="utf-8"?>
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
-              <solid android:color="#242426"/>
+              <solid android:color="?attr/colorSurface"/>
               <corners android:radius="20dp"/>
           </shape>
           EOF
@@ -124,7 +140,7 @@ jobs:
           cat << 'EOF' > app/src/main/res/drawable/bg_cover.xml
           <?xml version="1.0" encoding="utf-8"?>
           <shape xmlns:android="http://schemas.android.com/apk/res/android">
-              <solid android:color="#2A2A2D"/>
+              <solid android:color="?attr/colorSurface"/>
               <corners android:radius="10dp"/>
           </shape>
           EOF
@@ -164,7 +180,7 @@ jobs:
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:text="Название"
-                      android:textColor="#FFFFFF"
+                      android:textColor="?attr/colorOnSurface"
                       android:textSize="15sp"
                       android:textStyle="bold"
                       android:singleLine="true"
@@ -199,7 +215,7 @@ jobs:
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              android:background="#0A0A0A">
+              android:background="?attr/windowBackground">
 
               <LinearLayout
                   android:layout_width="match_parent"
@@ -217,7 +233,7 @@ jobs:
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
                       android:text="←"
-                      android:textColor="#FFFFFF"
+                      android:textColor="?attr/colorOnSurface"
                       android:textSize="17sp"
                       android:textStyle="bold"
                       android:layout_marginEnd="8dp"
@@ -229,11 +245,22 @@ jobs:
                       android:layout_height="wrap_content"
                       android:layout_weight="1"
                       android:text="Музыка • Spaces"
-                      android:textColor="#FFFFFF"
+                      android:textColor="?attr/colorOnSurface"
                       android:textSize="18sp"
                       android:textStyle="bold"
                       android:singleLine="true"
                       android:ellipsize="end"/>
+
+                  <TextView
+                      android:id="@+id/btnTheme"
+                      android:layout_width="34dp"
+                      android:layout_height="34dp"
+                      android:background="@drawable/bg_chip"
+                      android:gravity="center"
+                      android:text="🌙"
+                      android:textColor="?attr/colorOnSurface"
+                      android:textSize="14sp"
+                      android:layout_marginEnd="6dp"/>
 
                   <TextView
                       android:id="@+id/btnEq"
@@ -242,7 +269,7 @@ jobs:
                       android:background="@drawable/bg_chip"
                       android:gravity="center"
                       android:text="⚙"
-                      android:textColor="#FFFFFF"
+                      android:textColor="?attr/colorOnSurface"
                       android:textSize="14sp"
                       android:layout_marginEnd="6dp"/>
 
@@ -254,7 +281,7 @@ jobs:
                       android:gravity="center"
                       android:paddingHorizontal="10dp"
                       android:text="⏱"
-                      android:textColor="#FFFFFF"
+                      android:textColor="?attr/colorOnSurface"
                       android:textSize="12sp"
                       android:layout_marginEnd="6dp"/>
 
@@ -285,7 +312,7 @@ jobs:
                       android:layout_weight="1"
                       android:background="@drawable/bg_search"
                       android:hint="Поиск треков, альбомов или артистов..."
-                      android:textColor="#FFFFFF"
+                      android:textColor="?attr/colorOnSurface"
                       android:textColorHint="#787880"
                       android:paddingHorizontal="14dp"
                       android:singleLine="true"
@@ -316,12 +343,12 @@ jobs:
                       android:orientation="horizontal">
 
                       <TextView android:id="@+id/chipOnline" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip_active" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Онлайн" android:textColor="#FFCC00" android:textSize="12sp" android:layout_marginEnd="6dp"/>
-                      <TextView android:id="@+id/chipPop" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Популярные" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginEnd="6dp"/>
-                      <TextView android:id="@+id/chipNew" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Артисты" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginEnd="6dp"/>
-                      <TextView android:id="@+id/chipAlbums" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Альбомы" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginEnd="6dp"/>
-                      <TextView android:id="@+id/chipCats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Жанры" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginEnd="6dp"/>
-                      <TextView android:id="@+id/chipFav" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Любимые" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginEnd="6dp"/>
-                      <TextView android:id="@+id/chipHist" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="История" android:textColor="#FFFFFF" android:textSize="12sp"/>
+                      <TextView android:id="@+id/chipPop" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Популярные" android:textColor="?attr/colorOnSurface" android:textSize="12sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/chipNew" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Артисты" android:textColor="?attr/colorOnSurface" android:textSize="12sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/chipAlbums" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Альбомы" android:textColor="?attr/colorOnSurface" android:textSize="12sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/chipCats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Жанры" android:textColor="?attr/colorOnSurface" android:textSize="12sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/chipFav" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Любимые" android:textColor="?attr/colorOnSurface" android:textSize="12sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/chipHist" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="История" android:textColor="?attr/colorOnSurface" android:textSize="12sp"/>
                   </LinearLayout>
               </HorizontalScrollView>
 
@@ -340,9 +367,9 @@ jobs:
                       android:orientation="horizontal">
 
                       <TextView android:id="@+id/filterAll" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip_active" android:paddingHorizontal="12dp" android:paddingVertical="5dp" android:text="Все" android:textColor="#FFCC00" android:textSize="11sp" android:layout_marginEnd="6dp"/>
-                      <TextView android:id="@+id/filterArtists" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="12dp" android:paddingVertical="5dp" android:text="👤 Исполнители" android:textColor="#FFFFFF" android:textSize="11sp" android:layout_marginEnd="6dp"/>
-                      <TextView android:id="@+id/filterAlbums" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="12dp" android:paddingVertical="5dp" android:text="💿 Альбомы" android:textColor="#FFFFFF" android:textSize="11sp" android:layout_marginEnd="6dp"/>
-                      <TextView android:id="@+id/filterTracks" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="12dp" android:paddingVertical="5dp" android:text="♪ Треки" android:textColor="#FFFFFF" android:textSize="11sp"/>
+                      <TextView android:id="@+id/filterArtists" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="12dp" android:paddingVertical="5dp" android:text="👤 Исполнители" android:textColor="?attr/colorOnSurface" android:textSize="11sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/filterAlbums" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="12dp" android:paddingVertical="5dp" android:text="💿 Альбомы" android:textColor="?attr/colorOnSurface" android:textSize="11sp" android:layout_marginEnd="6dp"/>
+                      <TextView android:id="@+id/filterTracks" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_chip" android:paddingHorizontal="12dp" android:paddingVertical="5dp" android:text="♪ Треки" android:textColor="?attr/colorOnSurface" android:textSize="11sp"/>
                   </LinearLayout>
               </HorizontalScrollView>
 
@@ -381,7 +408,7 @@ jobs:
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:orientation="vertical"
-                  android:background="#18181A"
+                  android:background="?attr/colorSurface"
                   android:paddingHorizontal="14dp"
                   android:paddingTop="8dp"
                   android:paddingBottom="12dp">
@@ -441,7 +468,7 @@ jobs:
                           android:layout_height="38dp"
                           android:background="?attr/selectableItemBackgroundBorderless"
                           android:text="⬇"
-                          android:textColor="#FFFFFF"
+                          android:textColor="?attr/colorOnSurface"
                           android:textSize="16sp"
                           android:padding="0dp"/>
 
@@ -467,7 +494,7 @@ jobs:
                               android:layout_width="match_parent"
                               android:layout_height="wrap_content"
                               android:text="Выберите трек"
-                              android:textColor="#FFFFFF"
+                              android:textColor="?attr/colorOnSurface"
                               android:textSize="14sp"
                               android:textStyle="bold"
                               android:singleLine="true"
@@ -490,7 +517,7 @@ jobs:
                           android:layout_height="38dp"
                           android:background="?attr/selectableItemBackgroundBorderless"
                           android:text="⏮"
-                          android:textColor="#FFFFFF"
+                          android:textColor="?attr/colorOnSurface"
                           android:textSize="15sp"
                           android:padding="0dp"/>
 
@@ -512,7 +539,7 @@ jobs:
                           android:layout_height="38dp"
                           android:background="?attr/selectableItemBackgroundBorderless"
                           android:text="⏭"
-                          android:textColor="#FFFFFF"
+                          android:textColor="?attr/colorOnSurface"
                           android:textSize="15sp"
                           android:padding="0dp"/>
                   </LinearLayout>
@@ -531,7 +558,7 @@ jobs:
                   android:icon="@android:drawable/ic_media_play"
                   android:label="Spaces Музыка"
                   android:supportsRtl="true"
-                  android:theme="@style/Theme.Material3.Dark.NoActionBar"
+                  android:theme="@style/AppThemeDark"
                   android:usesCleartextTraffic="true">
                   <activity
                       android:name=".MainActivity"
@@ -557,6 +584,7 @@ jobs:
           cat << 'EOF' > app/src/main/java/com/example/spacesplayer/PlaybackService.kt
           package com.example.spacesplayer
 
+          import android.app.PendingIntent
           import android.content.Context
           import android.content.Intent
           import android.media.audiofx.BassBoost
@@ -569,6 +597,7 @@ jobs:
           import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
           import androidx.media3.session.MediaSession
           import androidx.media3.session.MediaSessionService
+          import androidx.media3.ui.PlayerNotificationManager
 
           object MusicEngine {
               const val USER_AGENT = "Mozilla/5.0 (Linux; Android 14; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
@@ -599,7 +628,11 @@ jobs:
                           }
                       })
                       player = exo
-                      mediaSession = MediaSession.Builder(appCtx, exo).build()
+                      val intent = Intent(appCtx, MainActivity::class.java)
+                      val pendingIntent = PendingIntent.getActivity(appCtx, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+                      mediaSession = MediaSession.Builder(appCtx, exo)
+                          .setSessionActivity(pendingIntent)
+                          .build()
                   }
               }
 
@@ -648,14 +681,48 @@ jobs:
           }
 
           class PlaybackService : MediaSessionService() {
+              private var notificationManager: PlayerNotificationManager? = null
+
               override fun onCreate() {
                   super.onCreate()
                   MusicEngine.ensureInitialized(this)
+                  val player = MusicEngine.player ?: return
+                  notificationManager = PlayerNotificationManager.Builder(
+                      this,
+                      1122,
+                      "spaces_music_channel"
+                  )
+                      .setChannelNameResourceId(android.R.string.untitled)
+                      .setMediaDescriptionAdapter(object : PlayerNotificationManager.MediaDescriptionAdapter {
+                          override fun getCurrentContentTitle(player: Player): CharSequence {
+                              return player.mediaMetadata.title ?: "Spaces Музыка"
+                          }
+                          override fun createCurrentContentIntent(player: Player): PendingIntent? {
+                              val intent = Intent(this@PlaybackService, MainActivity::class.java)
+                              return PendingIntent.getActivity(this@PlaybackService, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+                          }
+                          override fun getCurrentContentText(player: Player): CharSequence? {
+                              return player.mediaMetadata.artist ?: "Spaces"
+                          }
+                          override fun getCurrentLargeIcon(player: Player, callback: PlayerNotificationManager.BitmapCallback): android.graphics.Bitmap? {
+                              return null
+                          }
+                      })
+                      .build()
+                  notificationManager?.setPlayer(player)
+                  notificationManager?.setMediaSessionToken(MusicEngine.mediaSession!!.token)
               }
+
               override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
                   MusicEngine.ensureInitialized(this)
                   return MusicEngine.mediaSession
               }
+
+              override fun onDestroy() {
+                  notificationManager?.setPlayer(null)
+                  super.onDestroy()
+              }
+
               override fun onTaskRemoved(rootIntent: Intent?) {
                   val p = MusicEngine.player
                   if (p == null || !p.playWhenReady) {
@@ -758,16 +825,17 @@ jobs:
 
           class MainActivity : AppCompatActivity() {
               private val player: ExoPlayer
-                  get() {
-                      MusicEngine.ensureInitialized(this)
-                      return MusicEngine.player!!
-                  }
+              get() {
+                  MusicEngine.ensureInitialized(this)
+                  return MusicEngine.player!!
+              }
 
               private lateinit var rvTracks: RecyclerView
               private lateinit var tvStatus: TextView
               private lateinit var tvHeaderTitle: TextView
               private lateinit var tvMirror: TextView
               private lateinit var btnBackNav: TextView
+              private lateinit var btnTheme: TextView
               private lateinit var btnEq: TextView
               private lateinit var btnSleep: TextView
               private lateinit var etSearch: EditText
@@ -850,6 +918,10 @@ jobs:
                   .build()
 
               override fun onCreate(savedInstanceState: Bundle?) {
+                  val prefs = getSharedPreferences("spaces_v14", Context.MODE_PRIVATE)
+                  val isDark = prefs.getBoolean("is_dark_theme", true)
+                  setTheme(if (isDark) R.style.AppThemeDark else R.style.AppThemeLight)
+
                   super.onCreate(savedInstanceState)
                   setContentView(R.layout.activity_main)
 
@@ -858,7 +930,6 @@ jobs:
                       startService(Intent(this, PlaybackService::class.java))
                   } catch (_: Exception) {}
 
-                  val prefs = getSharedPreferences("spaces_v14", Context.MODE_PRIVATE)
                   baseHost = extractCleanHost(prefs.getString("host", "https://world84.spcs.bio") ?: "https://world84.spcs.bio")
 
                   rvTracks = findViewById(R.id.rvTracks)
@@ -866,6 +937,7 @@ jobs:
                   tvHeaderTitle = findViewById(R.id.tvHeaderTitle)
                   tvMirror = findViewById(R.id.tvMirror)
                   btnBackNav = findViewById(R.id.btnBackNav)
+                  btnTheme = findViewById(R.id.btnTheme)
                   btnEq = findViewById(R.id.btnEq)
                   btnSleep = findViewById(R.id.btnSleep)
                   etSearch = findViewById(R.id.etSearch)
@@ -895,6 +967,8 @@ jobs:
                   filterAlbums = findViewById(R.id.filterAlbums)
                   filterTracks = findViewById(R.id.filterTracks)
 
+                  btnTheme.text = if (isDark) "🌙" else "☀️"
+
                   updateMirrorBadge()
                   setupHiddenWebView()
                   setupPlayerListeners()
@@ -923,7 +997,6 @@ jobs:
                           c.setTextColor(0xFFFFCC00.toInt())
                       } else {
                           c.setBackgroundResource(R.drawable.bg_chip)
-                          c.setTextColor(0xFFFFFFFF.toInt())
                       }
                   }
               }
@@ -942,7 +1015,6 @@ jobs:
                           view.setTextColor(0xFFFFCC00.toInt())
                       } else {
                           view.setBackgroundResource(R.drawable.bg_chip)
-                          view.setTextColor(0xFFFFFFFF.toInt())
                       }
                   }
               }
@@ -983,19 +1055,19 @@ jobs:
                           super.onPageFinished(view, url)
                           if (webViewMp3Callback != null) {
                               val js = "(function() {" +
-                                  "var p = document.querySelector('.player_item[data-src], [data-src*=\".mp3\"], [data-mp3]');" +
-                                  "if (p) { var ds = p.getAttribute('data-src') || p.getAttribute('data-mp3'); if (ds) return ds; }" +
-                                  "var dl = document.querySelector('a.__adv_download[href], a[href*=\".mp3\"]');" +
-                                  "if (dl && dl.href) return dl.href;" +
-                                  "var a = document.querySelector('audio[src], source[src]');" +
-                                  "if (a && a.src) return a.src;" +
-                                  "var links = document.querySelectorAll('a[href]');" +
-                                  "for (var i = 0; i < links.length; i++) {" +
-                                  "  var h = links[i].href || '';" +
-                                  "  if (h.indexOf('.mp3') !== -1 || h.indexOf('/download/') !== -1 || h.indexOf('/files/download/') !== -1) return h;" +
-                                  "}" +
-                                  "return '';" +
-                                  "})();"
+                                      "var p = document.querySelector('.player_item[data-src], [data-src*=\".mp3\"], [data-mp3]');" +
+                                      "if (p) { var ds = p.getAttribute('data-src') || p.getAttribute('data-mp3'); if (ds) return ds; }" +
+                                      "var dl = document.querySelector('a.__adv_download[href], a[href*=\".mp3\"]');" +
+                                      "if (dl && dl.href) return dl.href;" +
+                                      "var a = document.querySelector('audio[src], source[src]');" +
+                                      "if (a && a.src) return a.src;" +
+                                      "var links = document.querySelectorAll('a[href]');" +
+                                      "for (var i = 0; i < links.length; i++) {" +
+                                      " var h = links[i].href || '';" +
+                                      " if (h.indexOf('.mp3') !== -1 || h.indexOf('/download/') !== -1 || h.indexOf('/files/download/') !== -1) return h;" +
+                                      "}" +
+                                      "return '';" +
+                                      "})();"
                               view?.evaluateJavascript(js) { res ->
                                   val clean = res?.trim()?.removeSurrounding("\"") ?: ""
                                   if (clean.startsWith("http") && isDirectAudioFileUrl(clean)) {
@@ -1088,8 +1160,14 @@ jobs:
                   tvMirror.setOnClickListener { showMirrorDialog() }
                   btnEq.setOnClickListener { showEqualizerDialog() }
                   btnSleep.setOnClickListener { showSleepTimerDialog() }
-
                   btnBackNav.setOnClickListener { navigateBack() }
+
+                  btnTheme.setOnClickListener {
+                      val prefs = getSharedPreferences("spaces_v14", Context.MODE_PRIVATE)
+                      val isDark = prefs.getBoolean("is_dark_theme", true)
+                      prefs.edit().putBoolean("is_dark_theme", !isDark).apply()
+                      recreate()
+                  }
 
                   findViewById<Button>(R.id.btnSearch).setOnClickListener {
                       val q = etSearch.text.toString().trim()
@@ -1422,9 +1500,9 @@ jobs:
                   if (currentEntry.tabMode == TabMode.SEARCH || hasMultipleTypes) {
                       subFilterScroll.visibility = View.VISIBLE
                       filterAll.text = "Все ($totalCount)"
-                      filterArtists.text = "👤 Исполнители ($artistCount)"
-                      filterAlbums.text = "💿 Альбомы ($albumCount)"
-                      filterTracks.text = "♪ Треки ($trackCount)"
+                      filterArtists.text = "ИСПОЛНИТЕЛИ [$artistCount]"
+                      filterAlbums.text = "АЛЬБОМЫ [$albumCount]"
+                      filterTracks.text = "КОМПОЗИЦИИ [$trackCount]"
 
                       filterArtists.visibility = if (artistCount > 0 || currentEntry.tabMode == TabMode.SEARCH) View.VISIBLE else View.GONE
                       filterAlbums.visibility = if (albumCount > 0 || currentEntry.tabMode == TabMode.SEARCH) View.VISIBLE else View.GONE
@@ -1456,16 +1534,16 @@ jobs:
                       SubFilter.ALL -> {
                           if (currentEntry.tabMode == TabMode.SEARCH || hasMultipleSections) {
                               if (artists.isNotEmpty()) {
-                                  items.add(SpaceItem("hdr_artists", "ИСПОЛНИТЕЛИ (${artists.size})", "Нажмите на артиста, чтобы открыть его альбомы и все треки", "", true, type = ItemType.HEADER))
+                                  items.add(SpaceItem("hdr_artists", "ИСПОЛНИТЕЛИ [${artists.size}]", "Показать все >", "", true, type = ItemType.HEADER))
                                   items.addAll(artists)
                               }
                               if (albums.isNotEmpty()) {
-                                  items.add(SpaceItem("hdr_albums", "АЛЬБОМЫ (${albums.size})", "Нажмите на альбом, чтобы открыть список песен", "", true, type = ItemType.HEADER))
+                                  items.add(SpaceItem("hdr_albums", "АЛЬБОМЫ [${albums.size}]", "Показать все >", "", true, type = ItemType.HEADER))
                                   items.addAll(albums)
                               }
                               if (tracks.isNotEmpty()) {
                                   if (artists.isNotEmpty() || albums.isNotEmpty()) {
-                                      items.add(SpaceItem("hdr_tracks", "ТРЕКИ (${tracks.size})", "Нажмите на трек для воспроизведения", "", true, type = ItemType.HEADER))
+                                      items.add(SpaceItem("hdr_tracks", "КОМПОЗИЦИИ [${tracks.size}]", "Показать все >", "", true, type = ItemType.HEADER))
                                   }
                                   items.addAll(tracks)
                               }
@@ -1488,17 +1566,11 @@ jobs:
                   syncSelectedIndex()
                   adapter.notifyDataSetChanged()
 
-                  val statusParts = ArrayList<String>()
-                  if (tracks.isNotEmpty()) statusParts.add("Треков: ${tracks.size}")
-                  if (artists.isNotEmpty()) statusParts.add("Артистов: ${artists.size}")
-                  if (albums.isNotEmpty()) statusParts.add("Альбомов: ${albums.size}")
-                  if (others.isNotEmpty()) statusParts.add("Разделов: ${others.size}")
+                  val artistCount = artists.size
+                  val albumCount = albums.size
+                  val trackCount = tracks.size
 
-                  tvStatus.text = if (statusParts.isNotEmpty()) {
-                      "${currentEntry.titleHint} • " + statusParts.joinToString(" | ")
-                  } else {
-                      "${currentEntry.titleHint} • Ничего не найдено"
-                  }
+                  tvStatus.text = "${currentEntry.titleHint} • КОМПОЗИЦИИ [$trackCount] | ИСПОЛНИТЕЛИ [$artistCount] | АЛЬБОМЫ [$albumCount]"
               }
 
               private fun syncSelectedIndex() {
@@ -1520,7 +1592,6 @@ jobs:
                   val seen = HashSet<String>()
                   var bestNextUrl = initialNext
 
-                  // 1. Подгружаем страницу альбомов артиста (/albums/)
                   val albumsDoc = fetchDocFast("$cleanBase/albums/")
                   if (albumsDoc != null) {
                       val albItems = parseMusicOnlineDoc(albumsDoc, TabMode.ALBUMS, albumsDoc.location() ?: "$cleanBase/albums/")
@@ -1530,12 +1601,10 @@ jobs:
                       }
                   }
 
-                  // Добавляем уже найденные альбомы с основной страницы артиста
                   for (i in initialItems.filter { it.type == ItemType.ALBUM }) {
                       if (seen.add(i.idKey)) combined.add(i)
                   }
 
-                  // 2. Подгружаем полный список треков артиста (/tracks/) с поддержкой пагинации p2..pN
                   val tracksDoc = fetchDocFast("$cleanBase/tracks/")
                   if (tracksDoc != null) {
                       val tUrl = tracksDoc.location() ?: "$cleanBase/tracks/"
@@ -1548,7 +1617,6 @@ jobs:
                       if (tracksNext != null) bestNextUrl = tracksNext
                   }
 
-                  // Добавляем остальные элементы с исходной страницы
                   for (i in initialItems) {
                       if (seen.add(i.idKey)) combined.add(i)
                   }
@@ -1577,7 +1645,7 @@ jobs:
                           }
                           if (d == null) return@withContext Pair<List<SpaceItem>?, String?>(null, null)
 
-                          val finalUrl = d.location() ?: fullTarget
+                          var finalUrl = d.location() ?: fullTarget
                           var next = findNextPageUrl(d, finalUrl)
                           var parsed = parseMusicOnlineDoc(d, mode, finalUrl)
 
@@ -1777,7 +1845,6 @@ jobs:
                   } catch (_: Exception) { "" }
                   val isGenresListPage = currentPath == "/music-online/genres" || Regex(""".*/music-online/genres/p\d+""").matches(currentPath)
 
-                  // 1. Исполнители (на странице поиска, в разделе артистов и в карточках)
                   if (!isGenresListPage && mode != TabMode.ALBUMS) {
                       val artistElements = doc.select("a.list-link[href*=/artist/], a[href*=/music-online/artist/], a[href*=/music-online/e/artist/]")
                       for (a in artistElements) {
@@ -1802,7 +1869,6 @@ jobs:
                       }
                   }
 
-                  // 2. Альбомы (на странице поиска, на странице исполнителя и в разделе альбомов)
                   if (!isGenresListPage) {
                       val albumElements = doc.select("a.list-link[href*=/album/], a[href*=/music-online/album/], a[href*=/music-online/e/album/]")
                       for (a in albumElements) {
@@ -1839,7 +1905,6 @@ jobs:
                       }
                   }
 
-                  // 3. Треки — на любой странице, кроме списка жанров
                   if (!isGenresListPage) {
                       for (container in doc.select("div.__adv_list_track")) {
                           val item = parseTrackContainer(container, seen)
@@ -1861,7 +1926,6 @@ jobs:
                       }
                   }
 
-                  // 4. Жанры — на странице жанров
                   if (isGenresListPage || mode == TabMode.GENRES) {
                       for (a in doc.select("a[href*=/music-online/search/by_tag/], a[href*=/music-online/genres/]")) {
                           if (a.hasClass("pgn__link")) continue
@@ -1909,7 +1973,6 @@ jobs:
                           val baseList = res.first
                           var bestNext = res.second
 
-                          // Если в поиске найден артист, дополнительно подгружаем его альбомы и полный список треков
                           val topArtist = baseList.firstOrNull { it.type == ItemType.ARTIST }
                           if (topArtist != null) {
                               val enriched = enrichArtistPage(topArtist.url, baseList, bestNext)
@@ -1997,8 +2060,16 @@ jobs:
               private fun onItemClicked(pos: Int) {
                   if (pos !in items.indices) return
                   val item = items[pos]
-                  if (item.type == ItemType.HEADER) return
-
+                  if (item.type == ItemType.HEADER) {
+                      if (item.subtitle.contains("Показать все")) {
+                          when {
+                              item.idKey.contains("artists") -> applySubFilter(SubFilter.ARTISTS)
+                              item.idKey.contains("albums") -> applySubFilter(SubFilter.ALBUMS)
+                              item.idKey.contains("tracks") -> applySubFilter(SubFilter.TRACKS)
+                          }
+                      }
+                      return
+                  }
                   if (item.isFolder) {
                       val nextMode = when (item.type) {
                           ItemType.ARTIST -> TabMode.ARTISTS
@@ -2016,7 +2087,7 @@ jobs:
                   val playerItem = doc.selectFirst("div.player_item[data-src], [data-src*=.mp3], [data-mp3]")
                   if (playerItem != null) {
                       val ds = playerItem.absUrl("data-src").ifEmpty { toAbsoluteUrl(playerItem.attr("data-src")) }
-                          .ifEmpty { playerItem.absUrl("data-mp3").ifEmpty { toAbsoluteUrl(playerItem.attr("data-mp3")) } }
+                          .ifEmpty { playerItem.absUrl("data-mp3").ifEmpty { playerItem.attr("data-mp3") } }
                       if (ds.isNotEmpty() && isDirectAudioFileUrl(ds)) return ds
                   }
 
@@ -2229,13 +2300,14 @@ jobs:
 
                       if (item.type == ItemType.HEADER) {
                           holder.tvCover.visibility = View.GONE
-                          holder.tvPlayIcon.visibility = View.GONE
+                          holder.tvPlayIcon.visibility = View.VISIBLE
                           holder.tvTitle.setTextColor(0xFFFFCC00.toInt())
-                          holder.tvTitle.textSize = 12f
-                          holder.tvSubtitle.setTextColor(0xFF8E8E93.toInt())
-                          holder.tvSubtitle.textSize = 11f
-                          holder.itemView.isClickable = false
-                          holder.itemView.setOnClickListener(null)
+                          holder.tvTitle.textSize = 13f
+                          holder.tvSubtitle.setTextColor(0xFFFFCC00.toInt())
+                          holder.tvSubtitle.textSize = 12f
+                          holder.tvPlayIcon.text = "›"
+                          holder.itemView.isClickable = true
+                          holder.itemView.setOnClickListener { onClick(position) }
                           return
                       }
 
@@ -2252,7 +2324,7 @@ jobs:
                               ItemType.GENRE -> "🏷"
                               else -> "📁"
                           }
-                          holder.tvTitle.setTextColor(0xFFFFFFFF.toInt())
+                          holder.tvTitle.setTextColor(resources.getColor(android.R.color.primary_text_dark, theme))
                           holder.tvSubtitle.setTextColor(
                               when (item.type) {
                                   ItemType.ARTIST -> 0xFFFFD54F.toInt()
@@ -2264,7 +2336,7 @@ jobs:
                       } else {
                           val sel = position == selectedIndex || (currentPlayingItem?.idKey == item.idKey)
                           holder.tvCover.text = if (sel && player.isPlaying) "🔊" else "♪"
-                          holder.tvTitle.setTextColor(if (sel) 0xFFFFCC00.toInt() else 0xFFFFFFFF.toInt())
+                          holder.tvTitle.setTextColor(if (sel) 0xFFFFCC00.toInt() else resources.getColor(android.R.color.primary_text_dark, theme))
                           holder.tvSubtitle.setTextColor(0xFF8EEB93.toInt())
                           holder.tvPlayIcon.text = if (sel && player.isPlaying) "❚❚" else "▶"
                       }
